@@ -70,27 +70,14 @@ extern "C" {
  * 
  * TODO: Specify bit width of int and double (32 or 64 bit)
  */
-typedef enum ipasir_option_type_name_t {
-    /// @brief unordered enum (value is a pointer to an integer from a compact integer interval)
-    ipasir_option_type_enum = 0,
-    /// @brief int (value is a pointer to an integer)
-    ipasir_option_type_int = 1,
-    /// @brief double (value is a pointer to a double)
-    ipasir_option_type_double = 2,
-    /// @brief char (value is a pointer to a char)
-    ipasir_option_type_char = 3,
-    /// @brief int* (value is a pointer to a zero terminated array of ints)
-    ipasir_option_type_int_array = 4,
-    /// @brief double* (value is a pointer to a zero terminated array of doubles)
-    ipasir_option_type_double_array = 5,
-    /// @brief char* (value is a pointer to a zero terminated array of chars)
-    ipasir_option_type_char_array = 6
-} ipasir_option_type_name_t;
-
-
 typedef struct ipasir_option_type_t {
     /// @brief type identifier
-    ipasir_option_type_name_t type;
+    enum {
+        ENUM = 0,
+        INT = 1,
+        DOUBLE = 2,
+        CHAR = 3
+    } type;
 
     /// @brief specifies minimum value of an enum, int or double option
     union { 
@@ -103,6 +90,10 @@ typedef struct ipasir_option_type_t {
         int int_;
         double double_;
     } maximum_value;
+
+    /// @brief specifies whether the option is an array and if so, the length of the array
+    /// TODO: specify whether the array is fixed or variable length (idea: -1 for length as number of variables, -2 for length as number of clauses)
+    int is_array;
 } ipasir_type_t;
 
 
