@@ -64,15 +64,58 @@ extern "C" {
  */
 #define IPASIR_VERSION 2
 
+
+
+struct ipasir_option_double_type_t {
+    const char* description;
+    const char* default_value;
+};
+
+struct ipasir_option_float_type_t {
+    const char* name;
+    const char* description;
+    const char* default_value;
+};
+
+
+typedef enum ipasir_option_type_name_t {
+    ENUM, 
+    INTEGER,
+    DOUBLE,
+    CHAR,
+    INTEGER_ARRAY,
+    DOUBLE_ARRAY,
+    CHAR_ARRAY
+} ipasir_option_type_name_t;
+
+typedef struct ipasir_option_type_t {
+    ipasir_option_type_name_t type;
+    union {
+        int64_t integer;
+        double double_;
+        char char_;
+        int64_t* integer_array;
+        double* double_array;
+        char* char_array;
+    } value;
+
+    /// @brief Minimum value of the option
+    int min;
+
+    /// @brief Maximum value of the option
+    int max;
+} ipasir_type_t;
+
+
 /**
  * @brief Generic IPASIR Options
  */
 struct ipasir_option_t {
     /// @brief Name of the option
-    const char* name;
+    char const* name;
 
     /// @brief Value of the option
-    void* value;
+    void const* value;
 
     /**
      * @brief Type of the option
@@ -87,13 +130,7 @@ struct ipasir_option_t {
      * 
      * TODO: Specify bit width of int and double (32 or 64 bit)
      */
-    int type;
-
-    /// @brief Minimum value of the option
-    int min;
-
-    /// @brief Maximum value of the option
-    int max;
+    ipasir_option_type_name_t type;
 };
 
 
