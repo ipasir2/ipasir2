@@ -65,14 +65,13 @@ extern "C" {
 #define IPASIR_VERSION 2
 
 
-
 /**
  * @brief Possible types of an ipasir_option
  * 
  * TODO: Specify bit width of int and double (32 or 64 bit)
  */
 typedef enum ipasir_option_type_name_t {
-    /// @brief enum (value is a pointer to an int from a compact and unordered integer interval)
+    /// @brief unordered enum (value is a pointer to an integer from a compact integer interval)
     ipasir_option_type_enum = 0,
     /// @brief int (value is a pointer to an integer)
     ipasir_option_type_int = 1,
@@ -89,22 +88,21 @@ typedef enum ipasir_option_type_name_t {
 } ipasir_option_type_name_t;
 
 
-typedef union ipasir_option_value_type_t {
-    int integer;
-    double double_;
-    char character;
-    int* integer_array;
-    double* double_array;
-    char* char_array;
-} ipasir_option_value_type_t;
-
-
 typedef struct ipasir_option_type_t {
+    /// @brief type identifier
     ipasir_option_type_name_t type;
 
-    ipasir_option_value_type_t default_value;
-    ipasir_option_value_type_t minimum_value;
-    ipasir_option_value_type_t maximum_value;
+    /// @brief specifies minimum value of an enum, int or double option
+    union { 
+        int int_;
+        double double_;
+    } minimum_value;
+
+    /// @brief specifies maximum value of an enum, int or double option
+    union { 
+        int int_;
+        double double_;
+    } maximum_value;
 } ipasir_type_t;
 
 
@@ -117,10 +115,10 @@ struct ipasir_option_t {
 
     /// @brief Value of the option
     void const* value;
+
+    /// @brief Type of the option
     ipasir_option_type_t type;
 };
-
-
 
 
 /**
@@ -185,6 +183,8 @@ void ipasir_set_import_redundant_clause(void* solver,
   void (*callback)(void* solver, int** literals, void* meta_data), void* state);
 
 
+
+/// Further Suggested IPASIR 2 Methods
 /**
  * @brief Provide a standardized way to return solver statistics
  */
@@ -199,7 +199,7 @@ struct ipasir_stats_t {
 
 ipasir_stats_t* ipasir_get_stats();
 
-
+/// Further Suggested IPASIR 2 Methods
 /**
  * @brief Set callback to listen to clause deletions
  */
