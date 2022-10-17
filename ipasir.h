@@ -77,12 +77,13 @@ struct ipasir_option_t {
     /**
      * @brief Type of the option
      * type can take on any of the following values:
-     * - 0: int (value is a pointer to an int)
-     * - 1: double (value is a pointer to a double)
-     * - 2: char (value is a pointer to a char)
-     * - 3: int* (value is a pointer to a zero terminated array of ints)
-     * - 4: double* (value is a pointer to a zero terminated array of doubles)
-     * - 5: char* (value is a pointer to a zero terminated array of chars)
+     * - 0: enum (value is a pointer to an int from a compact and unordered integer interval)
+     * - 1: int (value is a pointer to an integer)
+     * - 2: double (value is a pointer to a double)
+     * - 3: char (value is a pointer to a char)
+     * - 4: int* (value is a pointer to a zero terminated array of ints)
+     * - 5: double* (value is a pointer to a zero terminated array of doubles)
+     * - 6: char* (value is a pointer to a zero terminated array of chars)
      * 
      * TODO: Specify bit width of int and double (32 or 64 bit)
      */
@@ -90,7 +91,7 @@ struct ipasir_option_t {
 
     /// @brief Minimum value of the option
     int min;
-    
+
     /// @brief Maximum value of the option
     int max;
 };
