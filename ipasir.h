@@ -61,63 +61,67 @@ extern "C" {
  * @brief Indicate IPASIR Version
  * 
  * Can become useful for applications to determine availabilty of methods.
- * 
- * Suggested Backport: Use 1 for initial version and 1.5 for versions with ipasir_set_learned_callback()1
  */
 #define IPASIR_VERSION 2
 
-
 /**
- * IPASIR Configuration
+ * @brief Generic IPASIR Option
  * 
- * Restricted to options in the specified configuration struct. 
- * 
- * TODO: Specify when configuration is allowed to take place
- * TODO: Specify feature categories to be used as prefix (core_, vsids_, etc.)
- * 
- * Some initial ideas:
+ * Supported Types: INT, FLOAT, CHAR, INT*, FLOAT*, CHAR*
  */
-struct ipasir_config_t {
-    int seed;  // Solver internal diversification
-    bool initial_polarity;  // negative branching
-    char* initial_phases;  // more powerful, would subsume global initial_polarity
-    bool non_incremental;  // https://github.com/biotomas/ipasir/pull/5
-    bool simple_mode;  // (cheap mode?) or so…
-    int max_var;  // when all above are assumptions (activate special operation mode of Glucose)
+struct ipasir_option_t {
+    int type;
+    int min;
+    int max;
+    const char* name;
+    void* value;
 };
 
-/**
- * @brief Return IPASIR Configuration
- * 
- * Returns the current solver configuration. 
- * If none has been set before, the configuration is filled with the correct solver defaults. 
- * The memory of the returned configuration struct belongs to the solver.
- * 
- * 
- * Proposed Usage:
- * 
- *   ipasir_config_t* config = ipasir_get_configuration(S);  // construct
- *   config.feature = value;  // modify
- *   ...
- *   ipasir_set_configuration(S, config);  // set
- * 
- * 
- * This should be an involution: 
- * 
- *   ipasir_set_configuration(ipasir_get_configuration(S))
- * 
- * @param S SAT Solver
- * @return ipasir_config_t* Solver Configuration
- */
-ipasir_config_t* ipasir_get_configuration(void* S);
 
 /**
- * @brief Set IPASIR Configuration
+ * Suggested IPASIR Options
  * 
- * @param S SAT Solver
- * @param config Solver Configuration
+ * ipasir_seed; // solver internal diversification
+ * ipasir_cdcl_max_conflicts;
+ * ipasir_cdcl_max_decisions;
+ * ipasir_cdcl_max_propagations;
+ * ipasir_vsids_decay;
+ * ipasir_initial_polarity; // negative branching
+ * ipasir_initial_phases; // more powerful, would subsume global initial_polarity
+ * ipasir_one_shot; // https://github.com/biotomas/ipasir/pull/5
+ * ipasir_simple_mode; // (cheap mode?) or so
+ * ipasir_max_var; // when all above are assumptions (activate special operation mode of Glucose)
  */
-void ipasir_set_configuration(void* S, ipasir_config_t* config);
+
+/** 
+ * @brief Return IPASIR Configuration Options
+ * 
+ * ipasir_options() returns a NULL terminated array of ipasir_option_t.
+ * 
+ * The array contains all available options for the solver.
+ * The array is owned by the solver and must not be freed by the caller.
+ * Its entries are const and must not be modified by the caller.
+ * Use the ipasir_set_option() method to change options. 
+ * 
+ * The array must contain all options as specified in the IPASIR 2 specification.
+ * Options with the prefix "ipasir_" are reserved for the IPASIR 2 specification.
+ * TODO: specification of IPASIR 2 options
+ * TODO: specification of namespaces
+ * 
+ * Required state: INPUT or SAT or UNSAT
+ * State after: INPUT or SAT or UNSAT
+ * 
+ * @return ipasir_option_t* Start of array of options
+ */
+const ipasir_option_t* ipasir_options(void* S);
+
+/** 
+ * @brief Set given IPASIR Configuration Option
+ * 
+ * Required state: INPUT or SAT or UNSAT
+ * State after: INPUT
+ */
+void ipasir_set_option(void* S, ipasir_option_t* opt);
 
 
 /**
@@ -154,7 +158,7 @@ ipasir_stats_t* ipasir_get_stats();
 /**
  * @brief Set callback to listen to clause deletions
  */
-void ipasir_set_delete(void* solver, void* data, int max_length, void (*learn)(void* data, int32_t* clause));
+void ipasir_set_delete(void* solver, void* data, int max_length, void (*callback)(void* data, int32_t* clause));
 
 
 /**************************************************************************/
@@ -339,7 +343,7 @@ IPASIR_API void ipasir_set_terminate(void* solver, void* data, int (*terminate)(
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT or SAT or UNSAT
  */
-IPASIR_API void ipasir_set_learn(void* solver, void* data, int max_length, void (*learn)(void* data, int32_t* clause));
+IPASIR_API void ipasir_set_learn(void* solver, void* data, int max_length, void (*callback)(void* data, int32_t* clause));
 
 #ifdef __cplusplus
 }  // closing extern "C"
