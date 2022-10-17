@@ -66,44 +66,45 @@ extern "C" {
 
 
 
-struct ipasir_option_double_type_t {
-    const char* description;
-    const char* default_value;
-};
-
-struct ipasir_option_float_type_t {
-    const char* name;
-    const char* description;
-    const char* default_value;
-};
-
-
+/**
+ * @brief Possible types of an ipasir_option
+ * 
+ * TODO: Specify bit width of int and double (32 or 64 bit)
+ */
 typedef enum ipasir_option_type_name_t {
-    ENUM, 
-    INTEGER,
-    DOUBLE,
-    CHAR,
-    INTEGER_ARRAY,
-    DOUBLE_ARRAY,
-    CHAR_ARRAY
+    /// @brief enum (value is a pointer to an int from a compact and unordered integer interval)
+    ipasir_option_type_enum = 0,
+    /// @brief int (value is a pointer to an integer)
+    ipasir_option_type_int = 1,
+    /// @brief double (value is a pointer to a double)
+    ipasir_option_type_double = 2,
+    /// @brief char (value is a pointer to a char)
+    ipasir_option_type_char = 3,
+    /// @brief int* (value is a pointer to a zero terminated array of ints)
+    ipasir_option_type_int_array = 4,
+    /// @brief double* (value is a pointer to a zero terminated array of doubles)
+    ipasir_option_type_double_array = 5,
+    /// @brief char* (value is a pointer to a zero terminated array of chars)
+    ipasir_option_type_char_array = 6
 } ipasir_option_type_name_t;
+
+
+typedef union ipasir_option_value_type_t {
+    int integer;
+    double double_;
+    char character;
+    int* integer_array;
+    double* double_array;
+    char* char_array;
+} ipasir_option_value_type_t;
+
 
 typedef struct ipasir_option_type_t {
     ipasir_option_type_name_t type;
-    union {
-        int64_t integer;
-        double double_;
-        char char_;
-        int64_t* integer_array;
-        double* double_array;
-        char* char_array;
-    } value;
 
-    /// @brief Minimum value of the option
-    int min;
-
-    /// @brief Maximum value of the option
-    int max;
+    ipasir_option_value_type_t default_value;
+    ipasir_option_value_type_t minimum_value;
+    ipasir_option_value_type_t maximum_value;
 } ipasir_type_t;
 
 
@@ -116,21 +117,7 @@ struct ipasir_option_t {
 
     /// @brief Value of the option
     void const* value;
-
-    /**
-     * @brief Type of the option
-     * type can take on any of the following values:
-     * - 0: enum (value is a pointer to an int from a compact and unordered integer interval)
-     * - 1: int (value is a pointer to an integer)
-     * - 2: double (value is a pointer to a double)
-     * - 3: char (value is a pointer to a char)
-     * - 4: int* (value is a pointer to a zero terminated array of ints)
-     * - 5: double* (value is a pointer to a zero terminated array of doubles)
-     * - 6: char* (value is a pointer to a zero terminated array of chars)
-     * 
-     * TODO: Specify bit width of int and double (32 or 64 bit)
-     */
-    ipasir_option_type_name_t type;
+    ipasir_option_type_t type;
 };
 
 
