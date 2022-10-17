@@ -65,17 +65,37 @@ extern "C" {
 #define IPASIR_VERSION 2
 
 /**
- * @brief Generic IPASIR Option
- * 
- * Supported Types: INT, FLOAT, CHAR, INT*, FLOAT*, CHAR*
+ * @brief Generic IPASIR Options
  */
 struct ipasir_option_t {
-    int type;
-    int min;
-    int max;
+    /// @brief Name of the option
     const char* name;
+
+    /// @brief Value of the option
     void* value;
+
+    /**
+     * @brief Type of the option
+     * type can take on any of the following values:
+     * - 0: int (value is a pointer to an int)
+     * - 1: double (value is a pointer to a double)
+     * - 2: char (value is a pointer to a char)
+     * - 3: int* (value is a pointer to a zero terminated array of ints)
+     * - 4: double* (value is a pointer to a zero terminated array of doubles)
+     * - 5: char* (value is a pointer to a zero terminated array of chars)
+     * 
+     * TODO: Specify bit width of int and double (32 or 64 bit)
+     */
+    int type;
+
+    /// @brief Minimum value of the option
+    int min;
+    
+    /// @brief Maximum value of the option
+    int max;
 };
+
+
 
 
 /**
@@ -113,7 +133,7 @@ struct ipasir_option_t {
  * 
  * @return ipasir_option_t* Start of array of options
  */
-const ipasir_option_t* ipasir_options(void* S);
+ipasir_option_t const* ipasir_options(void* S);
 
 /** 
  * @brief Set given IPASIR Configuration Option
