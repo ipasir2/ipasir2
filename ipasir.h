@@ -100,37 +100,49 @@ extern "C" {
  */
 
 
+
+// Used in ipasir_option_type_t for specifying max/min values
+// TODO: Discuss discarding this union and instead using int values for max/min values for all types
+typedef union int_or_float {
+    int_or_float(int x): int_(x) {}
+    int_or_float(float x): float_(x) {}
+    int int_;
+    float float_;
+};
+
+// TODO: Discuss discarding char
+// TODO: Discuss replacing enum with int plus a flag for specifying whether the value ordering carries semantics or not
+typedef enum ipasir_option_types {
+    ENUM = 0,
+    INT = 1,
+    FLOAT = 2,
+    CHAR = 3
+};
+
 /**
  * IPASIR 2.0: This is new in IPASIR 2.0
  * 
  * @brief Possible types of an ipasir_option
- * 
- * TODO: Specify bit width of int and double (32 or 64 bit)
  */
 typedef struct ipasir_option_type_t {
     /// @brief type identifier
-    enum {
-        ENUM = 0,
-        INT = 1,
-        DOUBLE = 2,
-        CHAR = 3
-    } type;
+    ipasir_option_types type;
 
-    /// @brief specifies minimum value of an enum, int or double option
-    union { 
-        int int_;
-        double double_;
-    } minimum_value;
+    /// @brief specifies minimum value of an enum, int or float option
+    int_or_float minimum;
 
-    /// @brief specifies maximum value of an enum, int or double option
-    union { 
-        int int_;
-        double double_;
-    } maximum_value;
+    /// @brief specifies maximum value of an enum, int or float option
+    int_or_float maximum;
 
     /// @brief specifies whether the option is an array and if so, the length of the array
-    /// TODO: specify whether the array is fixed or variable length (idea: -1 for length as number of variables, -2 for length as number of clauses)
-    int is_array;
+    ///        (0 means the option is an array of length equal to the number of variables in the formula)
+    ///        (1 means the option is not an array)
+    ///        (k > 1 means the option is an array of length equal k)
+    int length;
+
+    ipasir_option_type_t() : type(INT), minimum({0}), maximum({INT32_MAX}), length(1) {}
+
+    ipasir_option_type_t(ipasir_option_types typ, int min, int max, int len = 1) : type(typ), minimum({min}), maximum({max}), length(len) {}
 } ipasir_type_t;
 
 
@@ -152,18 +164,40 @@ struct ipasir_option_t {
 
 
 /**
- * Suggested IPASIR Options
+ * Examples and Suggested IPASIR Options
  * 
- * ipasir_seed; // solver internal diversification
- * ipasir_cdcl_max_conflicts;
- * ipasir_cdcl_max_decisions;
- * ipasir_cdcl_max_propagations;
- * ipasir_vsids_decay;
- * ipasir_initial_polarity; // negative branching
- * ipasir_initial_phases; // more powerful, would subsume global initial_polarity
- * ipasir_one_shot; // https://github.com/biotomas/ipasir/pull/5
- * ipasir_simple_mode; // (cheap mode?) or so
- * ipasir_max_var; // when all above are assumptions (activate special operation mode of Glucose)
+ * random seed for random number generator, e.g., for solver interanal diversification
+ *  ipasir.random_seed; type: int; default: 0; min: 0; max: INT32_MAX; length: 1
+ * 
+ * 
+ * TODO: Discuss enum for solving modes:
+ * 
+ * one-shot-solving mode, disable incremental solving (for activation of solving strategies that are only applicable to one-shot solving)
+ *  ipasir.one_shot_solving; type: int; default: 0; min: 0; max: 1; length: 1
+ * 
+ * simple solving mode, enable low-overhead solving strategies 
+ *  ipasir.simple_solving; type: int; default: 0; min: 0; max: 1; length: 1
+ * 
+ * 
+ * TODO: Discuss option for specifying maximum variable id which is not used as assumption (while all greater variable ids are used as assumptions):
+ * 
+ * a special mode of glucose allows for optimizing activation literals; this requires to specify the number of instance variables
+ *  ipasir.max_instance_variables; type: int; default: 0; min: 0; max: INT32_MAX; length: 1
+ * 
+ * TODO: Discuss standardiying configuration options for diverse solver modules: branching, preprocessing, restarts, learning, forgetting, ...
+ * 
+ * configuration of variable phases, e.g., positive, negative, etc.
+ *  ipasir.branching.variable_phase; type: enum; default: 0; min: 0; max: 1; length: 0
+ * 
+ * configuration of branching heuristics, e.g., VSIDS, Jeroslow-Wang, etc.
+ *  ipasir.branching.vsids.decay; type: float; default: 0.95; min: 0.0; max: 1.0; length: 1
+ *  ipasir.branching.vsids.inc; type: float; default: 1.0; min: 0.0; max: 1.0; length: 1
+ * 
+ * confguration of restart heuristics, e.g., Luby, geometric, etc.
+ *  ipasir.restart.luby.init; type: int; default: 100; min: 0; max: INT32_MAX; length: 1
+ *
+ * configuration of conflict clause deletion heuristics, e.g., LBD, etc.
+ *  ipasir.conflict_clause_deletion.core_lbd_max; type: int; default: 3; min: 0; max: INT32_MAX; length: 1
  */
 
 /** 
