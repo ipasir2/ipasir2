@@ -52,20 +52,57 @@ extern "C" {
 #endif
 
 
-/**************************************************************************/
-/************************** IPASIR 2 Land begins **************************/
-/**************************************************************************/
-
 
 /**
- * @brief Indicate IPASIR Version
+ * #################################################################################################################
+ * ##### IPASIR 2.0 Extension Draft --- New functionality is marked with "IPASIR 2.0" in the comments.
+ * #####
+ * ##### The following major contributions are included:
+ * ##### - Configuration:   A generic configuration interface for incremental SAT solvers
+ * ##### - Clause Sharing:  A callback interface for asynchronous import of shared clauses
+ * ##### 
+ * ##### (The following additional major contributions could be included:
+ * ##### - Solver Stats:    A generic interface for extracting solver statistics)
+ * #####
+ * ##### The following minor contributions are included:
+ * ##### - Versioning:      A constant indication the ipasir version
+ * ##### 
+ * ##### (The following additional minor contributions could be included:
+ * ##### - Clause Deletion: A callback interface for signalling deletion of clauses)
+ * #################################################################################################################
+ */
+
+
+
+/** 
+ * IPASIR 2.0: This is new in IPASIR 2.0
  * 
- * Can become useful for applications to determine availabilty of methods.
+ * @brief Indicate IPASIR Version
  */
 #define IPASIR_VERSION 2
 
 
+
 /**
+ * #################################################################################################################
+ * ##### The IPASIR 2.0 SAT Solver Configuration Interface
+ * #####
+ * ##### The following aspects have been respected in the desgin of the configuration interface:
+ * ##### 1. Genericity: The configuration interface can be used for all incremental SAT solvers and their applications.
+ * #####    This is achieved by using a generic configuration key-value pair interface with introspection capabilities.
+ * ##### 2. Simplicity: The configuration interface is easy to use.
+ * #####    This is achieved by specifying must-be-supported configuration keys and namespaces.
+ * ##### 3. Extensibility: The configuration interface can be used for future extensions.
+ * #####    This is achieved by using an iterable key-value pair interface.
+ * ##### 4. Automatability: The configuration interface can be used by automatic configuration tools and fuzzers.
+ * #####    This is achieved by using a generic type-system for introspection which includes value ranges.
+ * #################################################################################################################
+ */
+
+
+/**
+ * IPASIR 2.0: This is new in IPASIR 2.0
+ * 
  * @brief Possible types of an ipasir_option
  * 
  * TODO: Specify bit width of int and double (32 or 64 bit)
@@ -98,6 +135,8 @@ typedef struct ipasir_option_type_t {
 
 
 /**
+ * IPASIR 2.0: This is new in IPASIR 2.0
+ * 
  * @brief Generic IPASIR Options
  */
 struct ipasir_option_t {
@@ -128,6 +167,8 @@ struct ipasir_option_t {
  */
 
 /** 
+ * IPASIR 2.0: This is new in IPASIR 2.0
+ * 
  * @brief Return IPASIR Configuration Options
  * 
  * ipasir_options() returns a NULL terminated array of ipasir_option_t.
@@ -150,6 +191,8 @@ struct ipasir_option_t {
 ipasir_option_t const* ipasir_options(void* S);
 
 /** 
+ * IPASIR 2.0: This is new in IPASIR 2.0
+ * 
  * @brief Set given IPASIR Configuration Option
  * 
  * Required state: INPUT or SAT or UNSAT
@@ -159,6 +202,8 @@ void ipasir_set_option(void* S, ipasir_option_t* opt);
 
 
 /**
+ * IPASIR 2.0: This is new in IPASIR 2.0
+ * 
  * @brief Asynchronous Import of Learned Clauses
  * 
  * Set a callback which the internal solver may call while inside ipasir_solve for importing redundant clauses (like “consume” in Lingeling). 
@@ -177,6 +222,8 @@ void ipasir_set_import_redundant_clause(void* solver,
 
 /// Further Suggested IPASIR 2 Methods
 /**
+ * IPASIR 2.0: This is new in IPASIR 2.0
+ * 
  * @brief Provide a standardized way to return solver statistics
  */
 struct ipasir_stats_t {
@@ -192,6 +239,8 @@ ipasir_stats_t* ipasir_get_stats();
 
 /// Further Suggested IPASIR 2 Methods
 /**
+ * IPASIR 2.0: This is new in IPASIR 2.0
+ * 
  * @brief Set callback to listen to clause deletions
  */
 void ipasir_set_delete(void* solver, void* data, int max_length, void (*callback)(void* data, int32_t* clause));
