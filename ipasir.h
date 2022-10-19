@@ -137,7 +137,7 @@ typedef struct {
     ///        (1 means the option is not an array)
     ///        (k > 1 means the option is an array of length equal k)
     int length;
-} ipasir_option_type_t;
+} ipasir_option_type;
 
 
 /**
@@ -153,8 +153,8 @@ typedef struct {
     void const* value;
 
     /// @brief Type of the option
-    ipasir_option_type_t type;
-} ipasir_option_t;
+    ipasir_option_type type;
+} ipasir_option;
 
 
 /**
@@ -199,7 +199,7 @@ typedef struct {
  * 
  * @brief Return IPASIR Configuration Options
  * 
- * ipasir_options() returns a NULL terminated array of ipasir_option_t.
+ * ipasir_options() returns a NULL terminated array of ipasir_option objects.
  * 
  * The array contains all available options for the solver.
  * The array is owned by the solver and must not be freed by the caller.
@@ -216,7 +216,7 @@ typedef struct {
  * 
  * @return ipasir_option_t* Start of array of options
  */
-IPASIR_API ipasir_option_t const* ipasir_options(void* S);
+IPASIR_API ipasir_option const* ipasir_options(void* S);
 
 /** 
  * IPASIR 2.0: This is new in IPASIR 2.0
@@ -226,7 +226,7 @@ IPASIR_API ipasir_option_t const* ipasir_options(void* S);
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT
  */
-IPASIR_API void ipasir_set_option(void* S, ipasir_option_t const* opt);
+IPASIR_API void ipasir_set_option(void* S, ipasir_option const* opt);
 
 
 /**
@@ -261,9 +261,9 @@ typedef struct {
     uint64_t restarts;
     uint64_t learned_clauses;
     uint64_t deleted_clauses;
-} ipasir_stats_t;
+} ipasir_stats;
 
-IPASIR_API ipasir_stats_t const* ipasir_get_stats();
+IPASIR_API ipasir_stats const* ipasir_get_stats();
 
 /// Further Suggested IPASIR 2 Methods
 /**
