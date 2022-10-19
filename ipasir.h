@@ -104,8 +104,6 @@ extern "C" {
 // Used in ipasir_option_type_t for specifying max/min values
 // TODO: Discuss discarding this union and instead using int values for max/min values for all types
 typedef union int_or_float {
-    int_or_float(int x): int_(x) {}
-    int_or_float(float x): float_(x) {}
     int int_;
     float float_;
 };
@@ -139,10 +137,6 @@ typedef struct ipasir_option_type_t {
     ///        (1 means the option is not an array)
     ///        (k > 1 means the option is an array of length equal k)
     int length;
-
-    ipasir_option_type_t() : type(INT), minimum({0}), maximum({INT32_MAX}), length(1) {}
-
-    ipasir_option_type_t(ipasir_option_types typ, int min, int max, int len = 1) : type(typ), minimum({min}), maximum({max}), length(len) {}
 } ipasir_type_t;
 
 
