@@ -103,26 +103,26 @@ extern "C" {
 
 // Used in ipasir_option_type_t for specifying max/min values
 // TODO: Discuss discarding this union and instead using int values for max/min values for all types
-typedef union int_or_float {
+typedef union {
     int int_;
     float float_;
-};
+} int_or_float;
 
 // TODO: Discuss discarding char
 // TODO: Discuss replacing enum with int plus a flag for specifying whether the value ordering carries semantics or not
-typedef enum ipasir_option_types {
+typedef enum {
     ENUM = 0,
     INT = 1,
     FLOAT = 2,
     CHAR = 3
-};
+} ipasir_option_types;
 
 /**
  * IPASIR 2.0: This is new in IPASIR 2.0
  * 
  * @brief Possible types of an ipasir_option
  */
-typedef struct ipasir_option_type_t {
+typedef struct {
     /// @brief type identifier
     ipasir_option_types type;
 
@@ -137,7 +137,7 @@ typedef struct ipasir_option_type_t {
     ///        (1 means the option is not an array)
     ///        (k > 1 means the option is an array of length equal k)
     int length;
-} ipasir_type_t;
+} ipasir_option_type_t;
 
 
 /**
@@ -145,7 +145,7 @@ typedef struct ipasir_option_type_t {
  * 
  * @brief Generic IPASIR Options
  */
-struct ipasir_option_t {
+typedef struct {
     /// @brief Name of the option
     char const* name;
 
@@ -154,7 +154,7 @@ struct ipasir_option_t {
 
     /// @brief Type of the option
     ipasir_option_type_t type;
-};
+} ipasir_option_t;
 
 
 /**
@@ -254,14 +254,14 @@ void ipasir_set_import_redundant_clause(void* solver,
  * 
  * @brief Provide a standardized way to return solver statistics
  */
-struct ipasir_stats_t {
+typedef struct {
     uint64_t conflicts;
     uint64_t decisions;
     uint64_t propagations;
     uint64_t restarts;
     uint64_t learned_clauses;
     uint64_t deleted_clauses;
-};
+} ipasir_stats_t;
 
 ipasir_stats_t* ipasir_get_stats();
 
