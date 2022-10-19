@@ -216,7 +216,7 @@ typedef struct {
  * 
  * @return ipasir_option_t* Start of array of options
  */
-ipasir_option_t const* ipasir_options(void* S);
+IPASIR_API ipasir_option_t const* ipasir_options(void* S);
 
 /** 
  * IPASIR 2.0: This is new in IPASIR 2.0
@@ -226,7 +226,7 @@ ipasir_option_t const* ipasir_options(void* S);
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT
  */
-void ipasir_set_option(void* S, ipasir_option_t* opt);
+IPASIR_API void ipasir_set_option(void* S, ipasir_option_t* opt);
 
 
 /**
@@ -243,7 +243,7 @@ void ipasir_set_option(void* S, ipasir_option_t* opt);
  *  - meta-data* points to the glue value (or sth. else?) of the returned clause (0 < glue <= size); sth. like quality or weight
  *  - Both data* and meta-data* pointers must be valid until the callback is called again or the solver returns from solve
  */
-void ipasir_set_import_redundant_clause(void* solver,
+IPASIR_API void ipasir_set_import_redundant_clause(void* solver,
   void (*callback)(void* solver, int** literals, void* meta_data), void* state);
 
 
@@ -263,7 +263,7 @@ typedef struct {
     uint64_t deleted_clauses;
 } ipasir_stats_t;
 
-ipasir_stats_t* ipasir_get_stats();
+IPASIR_API ipasir_stats_t* ipasir_get_stats();
 
 /// Further Suggested IPASIR 2 Methods
 /**
@@ -271,7 +271,7 @@ ipasir_stats_t* ipasir_get_stats();
  * 
  * @brief Set callback to listen to clause deletions
  */
-void ipasir_set_delete(void* solver, void* data, int max_length, void (*callback)(void* data, int32_t* clause));
+IPASIR_API void ipasir_set_delete(void* solver, void* data, int max_length, void (*callback)(void* data, int32_t* clause));
 
 
 /**************************************************************************/
