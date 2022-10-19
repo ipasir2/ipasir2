@@ -263,7 +263,7 @@ typedef struct {
     uint64_t deleted_clauses;
 } ipasir_stats_t;
 
-IPASIR_API ipasir_stats_t* ipasir_get_stats();
+IPASIR_API ipasir_stats_t const* ipasir_get_stats();
 
 /// Further Suggested IPASIR 2 Methods
 /**
