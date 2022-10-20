@@ -103,28 +103,26 @@ extern "C" {
 
 // Used in ipasir_option_type_t for specifying max/min values
 // TODO: Discuss discarding this union and instead using int values for max/min values for all types
-typedef union int_or_float {
-    int_or_float(int x): int_(x) {}
-    int_or_float(float x): float_(x) {}
+typedef union {
     int int_;
     float float_;
-};
+} int_or_float;
 
 // TODO: Discuss discarding char
 // TODO: Discuss replacing enum with int plus a flag for specifying whether the value ordering carries semantics or not
-typedef enum ipasir_option_types {
+typedef enum {
     ENUM = 0,
     INT = 1,
     FLOAT = 2,
     CHAR = 3
-};
+} ipasir_option_types;
 
 /**
  * IPASIR 2.0: This is new in IPASIR 2.0
  * 
  * @brief Possible types of an ipasir_option
  */
-typedef struct ipasir_option_type_t {
+typedef struct {
     /// @brief type identifier
     ipasir_option_types type;
 
@@ -139,11 +137,7 @@ typedef struct ipasir_option_type_t {
     ///        (1 means the option is not an array)
     ///        (k > 1 means the option is an array of length equal k)
     int length;
-
-    ipasir_option_type_t() : type(INT), minimum({0}), maximum({INT32_MAX}), length(1) {}
-
-    ipasir_option_type_t(ipasir_option_types typ, int min, int max, int len = 1) : type(typ), minimum({min}), maximum({max}), length(len) {}
-} ipasir_type_t;
+} ipasir_option_type;
 
 
 /**
@@ -151,7 +145,7 @@ typedef struct ipasir_option_type_t {
  * 
  * @brief Generic IPASIR Options
  */
-struct ipasir_option_t {
+typedef struct {
     /// @brief Name of the option
     char const* name;
 
@@ -159,8 +153,8 @@ struct ipasir_option_t {
     void const* value;
 
     /// @brief Type of the option
-    ipasir_option_type_t type;
-};
+    ipasir_option_type type;
+} ipasir_option;
 
 
 /**
@@ -205,7 +199,7 @@ struct ipasir_option_t {
  * 
  * @brief Return IPASIR Configuration Options
  * 
- * ipasir_options() returns a NULL terminated array of ipasir_option_t.
+ * ipasir_options() returns a NULL terminated array of ipasir_option objects.
  * 
  * The array contains all available options for the solver.
  * The array is owned by the solver and must not be freed by the caller.
@@ -222,7 +216,7 @@ struct ipasir_option_t {
  * 
  * @return ipasir_option_t* Start of array of options
  */
-ipasir_option_t const* ipasir_options(void* S);
+IPASIR_API ipasir_option const* ipasir_options(void* S);
 
 /** 
  * IPASIR 2.0: This is new in IPASIR 2.0
@@ -232,7 +226,7 @@ ipasir_option_t const* ipasir_options(void* S);
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT
  */
-void ipasir_set_option(void* S, ipasir_option_t* opt);
+IPASIR_API void ipasir_set_option(void* S, ipasir_option const* opt);
 
 
 /**
@@ -249,7 +243,7 @@ void ipasir_set_option(void* S, ipasir_option_t* opt);
  *  - meta-data* points to the glue value (or sth. else?) of the returned clause (0 < glue <= size); sth. like quality or weight
  *  - Both data* and meta-data* pointers must be valid until the callback is called again or the solver returns from solve
  */
-void ipasir_set_import_redundant_clause(void* solver,
+IPASIR_API void ipasir_set_import_redundant_clause(void* solver,
   void (*callback)(void* solver, int** literals, void* meta_data), void* state);
 
 
@@ -260,16 +254,16 @@ void ipasir_set_import_redundant_clause(void* solver,
  * 
  * @brief Provide a standardized way to return solver statistics
  */
-struct ipasir_stats_t {
+typedef struct {
     uint64_t conflicts;
     uint64_t decisions;
     uint64_t propagations;
     uint64_t restarts;
     uint64_t learned_clauses;
     uint64_t deleted_clauses;
-};
+} ipasir_stats;
 
-ipasir_stats_t* ipasir_get_stats();
+IPASIR_API ipasir_stats const* ipasir_get_stats();
 
 /// Further Suggested IPASIR 2 Methods
 /**
@@ -277,7 +271,7 @@ ipasir_stats_t* ipasir_get_stats();
  * 
  * @brief Set callback to listen to clause deletions
  */
-void ipasir_set_delete(void* solver, void* data, int max_length, void (*callback)(void* data, int32_t* clause));
+IPASIR_API void ipasir_set_delete(void* solver, void* data, int max_length, void (*callback)(void* data, int32_t* clause));
 
 
 /**************************************************************************/
