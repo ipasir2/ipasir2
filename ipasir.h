@@ -226,7 +226,7 @@ IPASIR_API ipasir_option const* ipasir_options(void* S);
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT
  */
-IPASIR_API void ipasir_set_option(void* S, ipasir_option const* opt);
+IPASIR_API void ipasir_set_option(void* S, char const* name, void const* value);
 
 
 /**
