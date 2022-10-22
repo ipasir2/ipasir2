@@ -186,12 +186,8 @@ typedef struct {
  * 
  * @brief Return IPASIR Configuration Options
  * 
- * ipasir_options() returns a NULL terminated array of ipasir_option objects.
- * 
  * The array contains all available options for the solver.
  * The array is owned by the solver and must not be freed by the caller.
- * Its entries are const and must not be modified by the caller.
- * Use the ipasir_set_option() method to change options. 
  * 
  * The array must contain all options as specified in the IPASIR 2 specification.
  * Options with the prefix "ipasir_" are reserved for the IPASIR 2 specification.
@@ -201,9 +197,9 @@ typedef struct {
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT or SAT or UNSAT
  * 
- * @return ipasir_option_t* Start of array of options
+ * @return pointer to NULL-terminated array of pointers to ipasir_option objects.
  */
-IPASIR_API ipasir_option const* ipasir_options(void* S);
+IPASIR_API ipasir_option const* const* ipasir_options(void* S);
 
 /** 
  * IPASIR 2.0: This is new in IPASIR 2.0
