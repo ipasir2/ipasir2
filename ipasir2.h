@@ -75,7 +75,11 @@ extern "C" {
  */
 
 
-/// @brief error codes
+/**
+ * IPASIR 2.0: This is new in IPASIR 2.0
+ * 
+ * @brief IPASIR 2.0 Error Codes
+ */
 typedef enum {
   IPASIR_E_OK = 0,
   IPASIR_E_UNKNOWN = 1, // to be used if no other code applies
@@ -84,18 +88,15 @@ typedef enum {
   IPASIR_E_OUT_OF_MEM = 4,
   IPASIR_E_INVALID_CONFIG = 5,
   IPASIR_E_IO = 6,
+  IPASIR_E_INVALID_STATE = 7, // to be used if a function is called in a state which is not allowed by the ipasir state machine
 } ipasir2_errorcode;
 
 
-
-
-// TODO: Discuss discarding this union and instead using int values for max/min values for all types
-typedef union {
-    int int_;
-    float float_;
-} int_or_float;
-
-// TODO: Discuss replacing enum with int plus a flag for specifying whether the value ordering carries semantics or not
+/** 
+ * IPASIR 2.0: This is new in IPASIR 2.0
+ * 
+ * @brief Possible types of configuration options
+ */
 typedef enum {
     ENUM = 0,
     INT = 1,
@@ -105,23 +106,24 @@ typedef enum {
 /**
  * IPASIR 2.0: This is new in IPASIR 2.0
  * 
- * @brief Possible types of an ipasir2_option
+ * TODO: describe identifier naming schema here
+ * 
+ * @brief Specification of options for the configuration interface
  */
 typedef struct {
-    /// Identifier for the option
-    /// TODO: describe identifier naming schema here
+    /// identifier for the option
     char const* name;
 
     /// @brief type identifier
     ipasir2_option_type type;
 
-    /// @brief specifies minimum value of an enum, int or float option
-    int_or_float minimum;
+    /// @brief minimum value
+    int minimum;
 
-    /// @brief specifies maximum value of an enum, int or float option
-    int_or_float maximum;
+    /// @brief maximum value
+    int maximum;
 
-    /// @brief specifies whether the option is an array:
+    /// @brief flag inicating whether the option is an array:
     ///        - 0: the option is not an array
     ///        - 1: the option is an array of length equal to the number of variables in the formula
     int is_array;
