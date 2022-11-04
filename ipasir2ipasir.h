@@ -1,16 +1,22 @@
 /**
- * @file ipasir2.h
- * @author Markus Iser, Felix Kutzner, Armin Biere, Tomas Balyo, Carsten Sinz
- * @brief Re-entrant Incremental SAT Solver API (IPASIR2)
- * @version 2.0
- * @date 2022-11-02
- *  
+ * @file ipasir2ipasir.h
+ * @author Markus Iser (markus.iser@kit.edu)
+ * @brief Wrap IPASIR solver into IPASIR 2 solver
+ * @version 0.1
+ * @date 2022-11-04
+ * 
  * @copyright Copyright (c) 2022
+ * 
  */
-#ifndef INTERFACE_IPASIR2_H_
-#define INTERFACE_IPASIR2_H_
+
+#ifndef INTERFACE_IPASIR2IPASIR_H_
+#define INTERFACE_IPASIR2IPASIR_H_
 
 #include <stdint.h>
+
+#include "ipasir.h"
+//#include "ipasir2.h"
+
 
 /*
  * In this header, the macro IPASIR_API is defined as follows:
@@ -146,7 +152,9 @@ typedef struct {
  * 
  * @return pointer to NULL-terminated array of pointers to ipasir2_option objects.
  */
-IPASIR_API ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const* result);
+IPASIR_API ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const* result) {
+    return IPASIR_E_UNSUPPORTED;
+}
 
 /** 
  * IPASIR 2.0: This is new in IPASIR 2.0
@@ -156,7 +164,9 @@ IPASIR_API ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const* resu
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_option(void* S, char const* name, void const* value);
+IPASIR_API ipasir2_errorcode ipasir2_set_option(void* S, char const* name, void const* value) {
+    return IPASIR_E_UNSUPPORTED;
+}
 
 
 /**
@@ -174,7 +184,9 @@ IPASIR_API ipasir2_errorcode ipasir2_set_option(void* S, char const* name, void 
  *  - Both data* and meta-data* pointers must be valid until the callback is called again or the solver returns from solve
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver,
-  void (*callback)(void* solver, int** literals, void* meta_data), void* state);
+  void (*callback)(void* solver, int** literals, void* meta_data), void* state) {
+    return IPASIR_E_UNSUPPORTED;
+}
 
 
 /// Further Suggested IPASIR 2 Methods
@@ -183,7 +195,9 @@ IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver,
  * 
  * @brief Set callback to listen to clause deletions
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_delete(void* solver, void* data, void (*callback)(void* data, int32_t* clause));
+IPASIR_API ipasir2_errorcode ipasir2_set_delete(void* solver, void* data, void (*callback)(void* data, int32_t* clause)) {
+    return IPASIR_E_UNSUPPORTED;
+}
 
 
 /**************************************************************************/
@@ -197,7 +211,10 @@ IPASIR_API ipasir2_errorcode ipasir2_set_delete(void* solver, void* data, void (
  * 
  * @return const char* Library name and version
  */
-IPASIR_API ipasir2_errorcode ipasir2_signature(char const** result);
+IPASIR_API ipasir2_errorcode ipasir2_signature(char const** result) {
+    *result = ipasir_signature();
+    return IPASIR_E_OK;
+}
 
 /**
  * @brief Construct a new solver instance and return a pointer to it.
@@ -211,7 +228,10 @@ IPASIR_API ipasir2_errorcode ipasir2_signature(char const** result);
  * Required state: undefined
  * State after: INPUT
  */
-IPASIR_API ipasir2_errorcode ipasir2_init(void** result);
+IPASIR_API ipasir2_errorcode ipasir2_init(void** result) {
+    *result = ipasir_init();
+    return IPASIR_E_OK;
+}
 
 /**
  * @brief Release the given solver (destructor). 
@@ -226,7 +246,10 @@ IPASIR_API ipasir2_errorcode ipasir2_init(void** result);
  * Required state: INPUT or SAT or UNSAT
  * State after: undefined
  */
-IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
+IPASIR_API ipasir2_errorcode ipasir2_release(void* solver) {
+    ipasir_release(solver);
+    return IPASIR_E_OK;
+}
 
 /**
  * @brief Add the given literal into the currently added clause or finalize the clause with a 0. 
@@ -243,7 +266,10 @@ IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT
  */
-IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t lit_or_zero);
+IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t lit_or_zero) {
+    ipasir_add(solver, lit_or_zero);
+    return IPASIR_E_OK;
+}
 
 /**
  * @brief Add an assumption for the next SAT search. 
@@ -259,7 +285,10 @@ IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t lit_or_zero);
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT
  */
-IPASIR_API ipasir2_errorcode ipasir2_assume(void* solver, int32_t lit);
+IPASIR_API ipasir2_errorcode ipasir2_assume(void* solver, int32_t lit) {
+    ipasir_assume(solver, lit);
+    return IPASIR_E_OK;
+}
 
 /**
  * @brief Solve the formula with specified clauses under the specified assumptions.
@@ -281,7 +310,10 @@ IPASIR_API ipasir2_errorcode ipasir2_assume(void* solver, int32_t lit);
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT or SAT or UNSAT
  */
-IPASIR_API ipasir2_errorcode ipasir2_solve(void* solver, int* result);
+IPASIR_API ipasir2_errorcode ipasir2_solve(void* solver, int* result) {
+    *result = ipasir_solve(solver);
+    return IPASIR_E_OK;
+}
 
 /**
  * @brief Return the truth value of the given literal in the found satisfying assignment.
@@ -306,7 +338,10 @@ IPASIR_API ipasir2_errorcode ipasir2_solve(void* solver, int* result);
  * Required state: SAT
  * State after: SAT
  */
-IPASIR_API ipasir2_errorcode ipasir2_val(void* solver, int32_t lit, int32_t* result);
+IPASIR_API ipasir2_errorcode ipasir2_val(void* solver, int32_t lit, int32_t* result) {
+    *result = ipasir_val(solver, lit);
+    return IPASIR_E_OK;
+}
 
 /**
  * @brief Check if the given assumption literal was used to prove the
@@ -331,7 +366,10 @@ IPASIR_API ipasir2_errorcode ipasir2_val(void* solver, int32_t lit, int32_t* res
  * Required state: UNSAT
  * State after: UNSAT
  */
-IPASIR_API ipasir2_errorcode ipasir2_failed(void* solver, int32_t lit, int* result);
+IPASIR_API ipasir2_errorcode ipasir2_failed(void* solver, int32_t lit, int* result) {
+    *result = ipasir_failed(solver, lit);
+    return IPASIR_E_OK;
+}
 
 /**
  * @brief Set a callback function used to indicate a termination requirement to the solver.
@@ -354,7 +392,10 @@ IPASIR_API ipasir2_errorcode ipasir2_failed(void* solver, int32_t lit, int* resu
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT or SAT or UNSAT
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, int (*terminate)(void* data));
+IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, int (*terminate)(void* data)) {
+    ipasir_set_terminate(solver, data, terminate);
+    return IPASIR_E_OK;
+}
 
 /**
  * @brief Set a callback function for extracting learned clauses from the solver. 
@@ -386,10 +427,13 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, int
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT or SAT or UNSAT
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_learn(void* solver, void* data, void (*callback)(void* data, int32_t* clause));
+IPASIR_API ipasir2_errorcode ipasir2_set_learn(void* solver, void* data, void (*callback)(void* data, int32_t* clause)) {
+    ipasir_set_learn(solver, data, INT32_MAX, callback);
+    return IPASIR_E_OK;
+}
 
 #ifdef __cplusplus
 }  // closing extern "C"
 #endif
 
-#endif  // INTERFACE_IPASIR2_H_
+#endif  // INTERFACE_IPASIR2IPASIR_H_
