@@ -197,7 +197,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_delete(void* solver, void* data, void (
  * 
  * @return const char* Library name and version
  */
-IPASIR_API ipasir2_errorcode ipasir2_signature(char const* result);
+IPASIR_API ipasir2_errorcode ipasir2_signature(char const** result);
 
 /**
  * @brief Construct a new solver instance and return a pointer to it.
@@ -211,7 +211,7 @@ IPASIR_API ipasir2_errorcode ipasir2_signature(char const* result);
  * Required state: undefined
  * State after: INPUT
  */
-IPASIR_API ipasir2_errorcode ipasir2_init(void* result);
+IPASIR_API ipasir2_errorcode ipasir2_init(void** result);
 
 /**
  * @brief Release the given solver (destructor). 
