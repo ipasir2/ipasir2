@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "solvers/src/cadical/src/ipasir.h"
+#include "ipasir.h"
 
 int main() {
     void* cadical = ipasir_init();
