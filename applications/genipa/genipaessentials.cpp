@@ -6,7 +6,7 @@
  */
 
 extern "C" {
-    #include "ipasir2ipasir.h"
+    #include "ipasir2.h"
 }
 
 #include <stdlib.h>
