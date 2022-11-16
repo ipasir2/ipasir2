@@ -9,6 +9,7 @@ solvers/
 
 # Configuration
 .vscode/
+build/
 
 # CMake Artifacts
 CMakeCache.txt

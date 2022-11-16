@@ -85,7 +85,7 @@ target_include_directories(genipamax PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 add_dependencies(genipamax cadical)
 target_link_libraries(genipamax cadical pblib)
 
-add_executable(genipaessentials applications/genipa/genipaessentials.cpp ipasir2ipasir.h ipasir.h)
+add_executable(genipaessentials applications/genipa/genipaessentials.cpp ipasir2ipasir.cc ipasir.h)
 target_include_directories(genipaessentials PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 add_dependencies(genipaessentials cadical)
 target_link_libraries(genipaessentials cadical)
