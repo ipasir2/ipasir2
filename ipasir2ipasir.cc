@@ -1,5 +1,5 @@
 /**
- * @file ipasir2ipasir.h
+ * @file ipasir2ipasir.cc
  * @author Markus Iser (markus.iser@kit.edu)
  * @brief Wrap IPASIR solver into IPASIR 2 solver
  * @version 0.1
@@ -29,7 +29,7 @@
  * 
  * @return pointer to NULL-terminated array of pointers to ipasir2_option objects.
  */
-IPASIR_API ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const* result) {
+IPASIR_API ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const** result) {
     return IPASIR_E_UNSUPPORTED;
 }
 
