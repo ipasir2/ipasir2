@@ -89,6 +89,7 @@ typedef enum {
   IPASIR_E_INVALID_CONFIG = 5,
   IPASIR_E_IO = 6,
   IPASIR_E_INVALID_STATE = 7, // to be used if a function is called in a state which is not allowed by the ipasir state machine
+  IPASIR_E_OPTION_UNKNOWN = 8,
 } ipasir2_errorcode;
 
 
@@ -146,7 +147,7 @@ typedef struct {
  * 
  * @return pointer to NULL-terminated array of pointers to ipasir2_option objects.
  */
-IPASIR_API ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const* result);
+IPASIR_API ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const** result);
 
 /** 
  * IPASIR 2.0: This is new in IPASIR 2.0

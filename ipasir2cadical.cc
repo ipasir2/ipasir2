@@ -1,9 +1,9 @@
 /**
- * @file ipasir2ipasir.cc
+ * @file ipasir2cadical.cc
  * @author Markus Iser (markus.iser@kit.edu)
  * @brief Wrap IPASIR solver into IPASIR 2 solver
  * @version 0.1
- * @date 2022-11-04
+ * @date 2022-11-16
  * 
  * @copyright Copyright (c) 2022
  * 
@@ -11,7 +11,20 @@
 
 #include "ipasir.h"
 #include "ipasir2.h"
+#include "cadical.hpp"
 
+#include <cassert>
+
+
+
+#include <string>
+#include <iostream>
+using std::string;
+
+#include "config.hpp"
+#include "options.hpp"
+
+ipasir2_option* global_options; // initialized in ipasir2_init()
 
 /** 
  * IPASIR 2.0: This is new in IPASIR 2.0
@@ -30,8 +43,10 @@
  * @return pointer to NULL-terminated array of pointers to ipasir2_option objects.
  */
 IPASIR_API ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const** result) {
-    return IPASIR_E_UNSUPPORTED;
+    *result = global_options;
+    return IPASIR_E_OK;
 }
+
 
 /** 
  * IPASIR 2.0: This is new in IPASIR 2.0
@@ -42,7 +57,12 @@ IPASIR_API ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const** res
  * State after: INPUT
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_option(void* S, char const* name, void const* value) {
-    return IPASIR_E_UNSUPPORTED;
+    CaDiCaL::Solver* cadical = (CaDiCaL::Solver*) S;
+    if (cadical->is_valid_option(name)) {
+        cadical->set(name, *(int*)value);
+        return IPASIR_E_OK;
+    }
+    return IPASIR_E_OPTION_UNKNOWN;
 }
 
 
@@ -107,6 +127,25 @@ IPASIR_API ipasir2_errorcode ipasir2_signature(char const** result) {
  */
 IPASIR_API ipasir2_errorcode ipasir2_init(void** result) {
     *result = ipasir_init();
+
+    global_options = new ipasir2_option[CaDiCaL::number_of_options + 1];
+    int i = 0;
+    for (CaDiCaL::Option* option = CaDiCaL::Options::begin(); option != CaDiCaL::Options::end(); ++option) {
+        if (option->optimizable) {
+            global_options[i].name = option->name;
+            global_options[i].type = ipasir2_option_type::INT;
+            global_options[i].minimum = option->lo;
+            global_options[i].maximum = option->hi;
+            global_options[i].is_array = 0;
+            //global_options[i].default_value = option->def;
+            //global_options[i].description = option->description;
+            //global_options[i].preprocessing = option->preprocessing;
+            ++i;
+        }
+    }
+
+    global_options[i] = { 0 };
+
     return IPASIR_E_OK;
 }
 

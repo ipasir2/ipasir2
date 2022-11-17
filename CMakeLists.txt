@@ -89,3 +89,9 @@ add_executable(genipaessentials applications/genipa/genipaessentials.cpp ipasir2
 target_include_directories(genipaessentials PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 add_dependencies(genipaessentials cadical)
 target_link_libraries(genipaessentials cadical)
+
+add_executable(testoptions tests/print_all_options.cc ipasir2cadical.cc ipasir2.h ipasir.h)
+target_include_directories(testoptions PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(testoptions PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/solvers/src/cadical_external/src)
+add_dependencies(testoptions cadical)
+target_link_libraries(testoptions cadical)
