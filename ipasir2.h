@@ -285,6 +285,47 @@ IPASIR_API ipasir2_errorcode ipasir2_assume(void* solver, int32_t lit);
 IPASIR_API ipasir2_errorcode ipasir2_solve(void* solver, int* result);
 
 /**
+ * @brief Return the number of variables on the solver's assignment stack.
+ * 
+ * New in IPASIR 2.0.
+ * 
+ * This function can only be used if IPASIR2 is in either SAT or INPUT state.
+ * In SAT state, the number of variables on the assignment stack is 
+ * the number of variables in the formula.
+ * In INPUT state, the number of variables on the assignment stack is 
+ * the number of variables in the current partial assignment, e.g., if
+ * a conflict limit was reached during search.
+ * 
+ * @param solver SAT solver
+ * @param &result Number of variables on the assignment stack
+ * @return ipasir2_errorcode
+ * 
+ * Required state: INPUT or SAT
+ * State after: INPUT or SAT
+ */
+
+IPASIR_API ipasir2_errorcode ipasir2_assignment_size(void* solver, int32_t* result);
+
+/**
+ * @brief Return the assignment at the given position on the solver's assignment stack.
+ * 
+ * New in IPASIR 2.0.
+ * 
+ * This function can only be used if IPASIR2 is in either SAT or INPUT state.
+ * The assignment stack is indexed from 0 to assignment_size - 1.
+ * 
+ * @param solver SAT solver
+ * @param index Index of the assignment on the assignment stack
+ * @param &result Assignment at the given position on the assignment stack
+ * @return ipasir2_errorcode
+ * 
+ * Required state: INPUT or SAT
+ * State after: INPUT or SAT
+ */
+
+IPASIR_API ipasir2_errorcode ipasir2_assignment(void* solver, int32_t index, int32_t* result);
+
+/**
  * @brief Return the truth value of the given literal in the found satisfying assignment.
  * 
  * New in IPASIR 2.0: Return error code, moved result to last parameter
