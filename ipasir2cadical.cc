@@ -1,9 +1,9 @@
 /**
  * @file ipasir2cadical.cc
  * @author Markus Iser (markus.iser@kit.edu)
- * @brief Wrap IPASIR solver into IPASIR 2 solver
+ * @brief Wrap CaDiCaL solver into IPASIR 2 solver
  * @version 0.1
- * @date 2022-11-16
+ * @date 2022-11-17
  * 
  * @copyright Copyright (c) 2022
  * 
@@ -24,8 +24,6 @@ using std::string;
 #include "config.hpp"
 #include "options.hpp"
 
-ipasir2_option* global_options; // initialized in ipasir2_init()
-
 /** 
  * IPASIR 2.0: This is new in IPASIR 2.0
  * 
@@ -43,7 +41,24 @@ ipasir2_option* global_options; // initialized in ipasir2_init()
  * @return pointer to NULL-terminated array of pointers to ipasir2_option objects.
  */
 IPASIR_API ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const** result) {
-    *result = global_options;
+    ipasir2_option* solver_options = new ipasir2_option[CaDiCaL::number_of_options + 1];
+    int i = 0;
+    for (CaDiCaL::Option* option = CaDiCaL::Options::begin(); option != CaDiCaL::Options::end(); ++option) {
+        if (option->optimizable) {
+            solver_options[i].name = option->name;
+            solver_options[i].type = ipasir2_option_type::INT;
+            solver_options[i].minimum = option->lo;
+            solver_options[i].maximum = option->hi;
+            solver_options[i].is_array = 0;
+            //solver_options[i].default_value = option->def;
+            //solver_options[i].description = option->description;
+            //solver_options[i].preprocessing = option->preprocessing;
+            ++i;
+        }
+    }
+
+    solver_options[i] = { 0 };
+    *result = solver_options;
     return IPASIR_E_OK;
 }
 
@@ -127,25 +142,6 @@ IPASIR_API ipasir2_errorcode ipasir2_signature(char const** result) {
  */
 IPASIR_API ipasir2_errorcode ipasir2_init(void** result) {
     *result = ipasir_init();
-
-    global_options = new ipasir2_option[CaDiCaL::number_of_options + 1];
-    int i = 0;
-    for (CaDiCaL::Option* option = CaDiCaL::Options::begin(); option != CaDiCaL::Options::end(); ++option) {
-        if (option->optimizable) {
-            global_options[i].name = option->name;
-            global_options[i].type = ipasir2_option_type::INT;
-            global_options[i].minimum = option->lo;
-            global_options[i].maximum = option->hi;
-            global_options[i].is_array = 0;
-            //global_options[i].default_value = option->def;
-            //global_options[i].description = option->description;
-            //global_options[i].preprocessing = option->preprocessing;
-            ++i;
-        }
-    }
-
-    global_options[i] = { 0 };
-
     return IPASIR_E_OK;
 }
 
@@ -259,6 +255,53 @@ IPASIR_API ipasir2_errorcode ipasir2_val(void* solver, int32_t lit, int32_t* res
     return IPASIR_E_OK;
 }
 
+
+/**
+ * @brief Return the number of variables on the solver's assignment stack.
+ * 
+ * New in IPASIR 2.0.
+ * 
+ * This function can only be used if IPASIR2 is in either SAT or INPUT state.
+ * In SAT state, the number of variables on the assignment stack is 
+ * the number of variables in the formula.
+ * In INPUT state, the number of variables on the assignment stack is 
+ * the number of variables in the current partial assignment, e.g., if
+ * a conflict limit was reached during search.
+ * 
+ * @param solver SAT solver
+ * @param &result Number of variables on the assignment stack
+ * @return ipasir2_errorcode
+ * 
+ * Required state: INPUT or SAT
+ * State after: INPUT or SAT
+ */
+
+IPASIR_API ipasir2_errorcode ipasir2_assignment_size(void* solver, int32_t* result) {
+    return IPASIR_E_UNSUPPORTED;
+}
+
+/**
+ * @brief Return the assignment at the given position on the solver's assignment stack.
+ * 
+ * New in IPASIR 2.0.
+ * 
+ * This function can only be used if IPASIR2 is in either SAT or INPUT state.
+ * The assignment stack is indexed from 0 to assignment_size - 1.
+ * 
+ * @param solver SAT solver
+ * @param index Index of the assignment on the assignment stack
+ * @param &result Assignment at the given position on the assignment stack
+ * @return ipasir2_errorcode
+ * 
+ * Required state: INPUT or SAT
+ * State after: INPUT or SAT
+ */
+
+IPASIR_API ipasir2_errorcode ipasir2_assignment(void* solver, int32_t index, int32_t* result) {
+    return IPASIR_E_UNSUPPORTED;
+}
+
+
 /**
  * @brief Check if the given assumption literal was used to prove the
  * unsatisfiability of the formula under the assumptions
@@ -347,4 +390,3 @@ IPASIR_API ipasir2_errorcode ipasir2_set_learn(void* solver, void* data, void (*
     ipasir_set_learn(solver, data, INT32_MAX, callback);
     return IPASIR_E_OK;
 }
-
