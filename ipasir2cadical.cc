@@ -47,9 +47,8 @@ IPASIR_API ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const** res
         if (option->optimizable) {
             solver_options[i].name = option->name;
             solver_options[i].type = ipasir2_option_type::INT;
-            solver_options[i].minimum = option->lo;
-            solver_options[i].maximum = option->hi;
-            solver_options[i].is_array = 0;
+            solver_options[i].minimum._int = option->lo;
+            solver_options[i].maximum._int = option->hi;
             //solver_options[i].default_value = option->def;
             //solver_options[i].description = option->description;
             //solver_options[i].preprocessing = option->preprocessing;
