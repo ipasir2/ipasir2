@@ -92,6 +92,47 @@ typedef enum {
   IPASIR_E_OPTION_UNKNOWN = 8,
 } ipasir2_errorcode;
 
+/**
+ * @brief Return the number of variables on the solver's assignment stack.
+ * 
+ * New in IPASIR 2.0.
+ * 
+ * This function can only be used if IPASIR2 is in either SAT or INPUT state.
+ * In SAT state, the number of variables on the assignment stack is 
+ * the number of variables in the formula.
+ * In INPUT state, the number of variables on the assignment stack is 
+ * the number of variables in the current partial assignment, e.g., if
+ * a conflict limit was reached during search.
+ * 
+ * @param solver SAT solver
+ * @param &result Number of variables on the assignment stack
+ * @return ipasir2_errorcode
+ * 
+ * Required state: INPUT or SAT
+ * State after: INPUT or SAT
+ */
+
+IPASIR_API ipasir2_errorcode ipasir2_assignment_size(void* solver, int32_t* result);
+
+/**
+ * @brief Return the assignment at the given position on the solver's assignment stack.
+ * 
+ * New in IPASIR 2.0.
+ * 
+ * This function can only be used if IPASIR2 is in either SAT or INPUT state.
+ * The assignment stack is indexed from 0 to assignment_size - 1.
+ * 
+ * @param solver SAT solver
+ * @param index Index of the assignment on the assignment stack
+ * @param &result Assignment at the given position on the assignment stack
+ * @return ipasir2_errorcode
+ * 
+ * Required state: INPUT or SAT
+ * State after: INPUT or SAT
+ */
+
+IPASIR_API ipasir2_errorcode ipasir2_assignment(void* solver, int32_t index, int32_t* result);
+
 
 /** 
  * IPASIR 2.0: This is new in IPASIR 2.0
@@ -178,6 +219,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver,
   void (*callback)(void* solver, int** literals, void* meta_data), void* state);
 
 
+
 /**************************************************************************/
 /************************** IPASIR 1 Land begins **************************/
 /**************************************************************************/
@@ -187,7 +229,8 @@ IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver,
  * 
  * New in IPASIR 2.0: Return error code, moved result to parameter
  * 
- * @return const char* Library name and version
+ * @param const char* output parameter returns library name and version
+ * @return ipasir2_errorcode
  */
 IPASIR_API ipasir2_errorcode ipasir2_signature(char const** result);
 
@@ -198,7 +241,8 @@ IPASIR_API ipasir2_errorcode ipasir2_signature(char const** result);
  * 
  * Use the returned pointer as the first parameter in each of the following functions.
  *
- * @return void* SAT solver
+ * @param void* output parameter returns SAT solver instance
+ * @return ipasir2_errorcode
  *
  * Required state: undefined
  * State after: INPUT
@@ -213,7 +257,8 @@ IPASIR_API ipasir2_errorcode ipasir2_init(void** result);
  * Release all solver resources and allocated memory. 
  * The solver pointer cannot be used for any purposes after this call.
  * 
- * @param solver SAT solver
+ * @param solver SAT solver instance to be released
+ * @return ipasir2_errorcode
  *
  * Required state: INPUT or SAT or UNSAT
  * State after: undefined
@@ -231,6 +276,7 @@ IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
  * 
  * @param solver SAT solver
  * @param lit_or_zero Literal or 0
+ * @return ipasir2_errorcode
  * 
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT
@@ -247,6 +293,7 @@ IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t lit_or_zero);
  * 
  * @param solver SAT solver
  * @param lit Assumption Literal
+ * @return ipasir2_errorcode
  *
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT
@@ -268,53 +315,13 @@ IPASIR_API ipasir2_errorcode ipasir2_assume(void* solver, int32_t lit);
  * Note that the state of the solver _during_ execution of 'ipasir2_solve' is undefined.
  * 
  * @param solver SAT solver
- * @return int 10, 20 or 0
+ * @param int* output parameter returns solve result 10 (SAT), 20 (UNSAT) or 0 (INDETERMINATE)
+ * @return ipasir2_errorcode
  *
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT or SAT or UNSAT
  */
 IPASIR_API ipasir2_errorcode ipasir2_solve(void* solver, int* result);
-
-/**
- * @brief Return the number of variables on the solver's assignment stack.
- * 
- * New in IPASIR 2.0.
- * 
- * This function can only be used if IPASIR2 is in either SAT or INPUT state.
- * In SAT state, the number of variables on the assignment stack is 
- * the number of variables in the formula.
- * In INPUT state, the number of variables on the assignment stack is 
- * the number of variables in the current partial assignment, e.g., if
- * a conflict limit was reached during search.
- * 
- * @param solver SAT solver
- * @param &result Number of variables on the assignment stack
- * @return ipasir2_errorcode
- * 
- * Required state: INPUT or SAT
- * State after: INPUT or SAT
- */
-
-IPASIR_API ipasir2_errorcode ipasir2_assignment_size(void* solver, int32_t* result);
-
-/**
- * @brief Return the assignment at the given position on the solver's assignment stack.
- * 
- * New in IPASIR 2.0.
- * 
- * This function can only be used if IPASIR2 is in either SAT or INPUT state.
- * The assignment stack is indexed from 0 to assignment_size - 1.
- * 
- * @param solver SAT solver
- * @param index Index of the assignment on the assignment stack
- * @param &result Assignment at the given position on the assignment stack
- * @return ipasir2_errorcode
- * 
- * Required state: INPUT or SAT
- * State after: INPUT or SAT
- */
-
-IPASIR_API ipasir2_errorcode ipasir2_assignment(void* solver, int32_t index, int32_t* result);
 
 /**
  * @brief Return the truth value of the given literal in the found satisfying assignment.
@@ -334,7 +341,8 @@ IPASIR_API ipasir2_errorcode ipasir2_assignment(void* solver, int32_t index, int
  * 
  * @param solver SAT solver
  * @param lit Literal
- * @return int32_t Truth value of the given literal
+ * @param int32_t* output parameter returns truth value of the given literal
+ * @return ipasir2_errorcode
  *
  * Required state: SAT
  * State after: SAT
@@ -359,7 +367,8 @@ IPASIR_API ipasir2_errorcode ipasir2_val(void* solver, int32_t lit, int32_t* res
  * 
  * @param solver 
  * @param lit 
- * @return int
+ * @param int* output parameter returns 1 if the given assumption literal was used to prove unsatisfiability
+ * @return ipasir2_errorcode
  * 
  * Required state: UNSAT
  * State after: UNSAT
@@ -383,6 +392,7 @@ IPASIR_API ipasir2_errorcode ipasir2_failed(void* solver, int32_t lit, int* resu
  * @param solver 
  * @param data 
  * @param terminate 
+ * @return ipasir2_errorcode
  *
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT or SAT or UNSAT
@@ -415,6 +425,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, int
  * @param solver SAT solver
  * @param data 
  * @param learn 
+ * @return ipasir2_errorcode
  * 
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT or SAT or UNSAT
