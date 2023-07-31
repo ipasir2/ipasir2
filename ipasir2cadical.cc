@@ -101,17 +101,6 @@ IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver,
 }
 
 
-/// Further Suggested IPASIR 2 Methods
-/**
- * IPASIR 2.0: This is new in IPASIR 2.0
- * 
- * @brief Set callback to listen to clause deletions
- */
-IPASIR_API ipasir2_errorcode ipasir2_set_delete(void* solver, void* data, void (*callback)(void* data, int32_t* clause)) {
-    return IPASIR_E_UNSUPPORTED;
-}
-
-
 /**************************************************************************/
 /************************** IPASIR 1 Land begins **************************/
 /**************************************************************************/
