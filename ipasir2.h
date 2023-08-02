@@ -61,91 +61,36 @@ extern "C" {
 
 /**
  * #################################################################################################################
- * ##### IPASIR 2.0 Extension Draft --- New functionality is marked with "IPASIR 2.0" in the comments.
+ * ##### IPASIR 2.0 Draft
  * #####
- * ##### The following major contributions are included:
- * ##### - Configuration:   A generic configuration interface for incremental SAT solvers
- * ##### - Clause Sharing:  A callback interface for asynchronous import of shared clauses
- * ##### - Error Codes:     All function return an error code
- * ##### 
- * ##### (The following additional major contributions could be included:
- * ##### - Solver Stats:    A generic interface for extracting solver statistics)
+ * ##### The following is new in IPASIR 2.0:
+ * #####
+ * ##### - Configuration:    A generic configuration interface
+ * ##### - Clause Sharing:   A callback interface for asynchronous import of shared clauses
+ * ##### - Error Codes:      All functions now return an error code; values are returned via output parameters
+ * ##### - Assignment Stack: A new interface for accessing the solver's assignment stack in INPUT and SAT state
  * #####
  * #################################################################################################################
  */
 
 
 /**
- * IPASIR 2.0: This is new in IPASIR 2.0
- * 
  * @brief IPASIR 2.0 Error Codes
  */
-typedef enum {
+typedef enum ipasir2_errorcode {
   IPASIR_E_OK = 0,
   IPASIR_E_UNKNOWN = 1, // to be used if no other code applies
   IPASIR_E_UNSUPPORTED = 2,
-  IPASIR_E_OUT_OF_TIME = 3,
-  IPASIR_E_OUT_OF_MEM = 4,
-  IPASIR_E_INVALID_CONFIG = 5,
-  IPASIR_E_IO = 6,
-  IPASIR_E_INVALID_STATE = 7, // to be used if a function is called in a state which is not allowed by the ipasir state machine
-  IPASIR_E_OPTION_UNKNOWN = 8,
+  IPASIR_E_INVALID_STATE = 3, // to be used if a function is called in a state which is not allowed by the ipasir state machine
+  IPASIR_E_OUT_OF_TIME = 4,
+  IPASIR_E_OUT_OF_MEM = 5,
+  IPASIR_E_OPTION_UNKNOWN = 6,
+  IPASIR_E_INVALID_CONFIG = 7
 } ipasir2_errorcode;
-
-/**
- * @brief Return the number of variables on the solver's assignment stack.
- * 
- * New in IPASIR 2.0.
- * 
- * This function can only be used if IPASIR2 is in either SAT or INPUT state.
- * In SAT state, the number of variables on the assignment stack is 
- * the number of variables in the formula.
- * In INPUT state, the number of variables on the assignment stack is 
- * the number of variables in the current partial assignment, e.g., if
- * a conflict limit was reached during search.
- * 
- * @param solver SAT solver
- * @param &result Number of variables on the assignment stack
- * @return ipasir2_errorcode
- * 
- * Required state: INPUT or SAT
- * State after: INPUT or SAT
- */
-
-IPASIR_API ipasir2_errorcode ipasir2_assignment_size(void* solver, int32_t* result);
-
-/**
- * @brief Return the assignment at the given position on the solver's assignment stack.
- * 
- * New in IPASIR 2.0.
- * 
- * This function can only be used if IPASIR2 is in either SAT or INPUT state.
- * The assignment stack is indexed from 0 to assignment_size - 1.
- * 
- * @param solver SAT solver
- * @param index Index of the assignment on the assignment stack
- * @param &result Assignment at the given position on the assignment stack
- * @return ipasir2_errorcode
- * 
- * Required state: INPUT or SAT
- * State after: INPUT or SAT
- */
-
-IPASIR_API ipasir2_errorcode ipasir2_assignment(void* solver, int32_t index, int32_t* result);
 
 
 /** 
- * IPASIR 2.0: This is new in IPASIR 2.0
- * 
- * @brief Possible types of configuration options
- */
-typedef enum {
-    INT = 0,
-    FLOAT = 1
-} ipasir2_option_type;
-
-/**
- * IPASIR 2.0: This is new in IPASIR 2.0
+ * @brief Specification of options for the configuration interface
  * 
  * Solver options are identified by a string name.
  * Option identifers can be grouped into namespaces which are separated by a dot.
@@ -154,11 +99,14 @@ typedef enum {
  * If a solver does not support a given option, it must return IPASIR_E_OPTION_UNKNOWN when the option is set.
  * 
  * The following options are defined by the IPASIR-2 specification:
- * - ipasir.verbosity: int, minimum: 0, maximum: 2
+ * 
  * - ipasir.preprocessing: 
  * - ipasir.preprocessing.subsumption: int, minimum: 0, maximum: 1
  * - ipasir.preprocessing.bve: int, minimum: 0, maximum: 1
  * - ipasir.preprocessing.sbva: int, minimum: 0, maximum: 1
+ * - ...
+ * 
+ * - ipasir.limits:
  * - ipasir.limits.conflicts: int, minimum: -1, maximum: INT_MAX, default: -1
  *    - -1: no conflict limit
  *    - 0: no conflicts (exit on first conflict)
@@ -167,10 +115,14 @@ typedef enum {
  *    - -1: no decision limit
  *    - 0: no decisions (only unit propagation)
  *    - n: at most n decisions
- * 
- * @brief Specification of options for the configuration interface
+ * - ...
  */
-typedef struct {
+
+typedef enum ipasir2_option_type {
+    INT = 0,
+    FLOAT = 1
+} ipasir2_option_type;
+typedef struct ipasir2_option {
     /// identifier for the option
     char const* name;
 
@@ -186,37 +138,41 @@ typedef struct {
 
 
 /** 
- * IPASIR 2.0: This is new in IPASIR 2.0
- * 
  * @brief Return IPASIR Configuration Options
  * 
  * The array contains all available options for the solver.
  * The array is owned by the solver and must not be freed by the caller.
  * Options in the namespace "ipasir." are reserved by IPASIR specification.
  * 
- * TODO: specification of IPASIR 2 options and namespaces
+ * @param solver SAT solver
+ * @param result Output parameter: pointer to NULL-terminated array of pointers to ipasir2_option objects
+ * @return ipasir2_errorcode
  * 
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT or SAT or UNSAT
  * 
  * @return pointer to NULL-terminated array of pointers to ipasir2_option objects.
  */
-IPASIR_API ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const** result);
+IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const** result);
 
 /** 
- * IPASIR 2.0: This is new in IPASIR 2.0
- * 
  * @brief Set given IPASIR Configuration Option
+ * 
+ * @param solver SAT solver
+ * @param name Option name
+ * @param value Option value
+ * @return ipasir2_errorcode:
+ *  - IPASIR_E_OPTION_UNKNOWN if the option is not supported by the solver
+ *  - IPASIR_E_INVALID_CONFIG if the option value is invalid
+ *  - IPASIR_E_OK otherwise
  * 
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_option(void* S, char const* name, void const* value);
+IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, char const* name, void const* value);
 
 
 /**
- * IPASIR 2.0: This is new in IPASIR 2.0
- * 
  * @brief Asynchronous Import of Learned Clauses
  * 
  * Set a callback which the internal solver may call while inside ipasir2_solve for importing redundant clauses (like “consume” in Lingeling). 
@@ -227,20 +183,67 @@ IPASIR_API ipasir2_errorcode ipasir2_set_option(void* S, char const* name, void 
  *  - literals* points to nullptr if there is no clause to consume
  *  - meta-data* points to the glue value (or sth. else?) of the returned clause (0 < glue <= size); sth. like quality or weight
  *  - Both data* and meta-data* pointers must be valid until the callback is called again or the solver returns from solve
+ * 
+ * @param solver SAT solver
+ * @param callback Callback function
+ * @param state State object passed to callback function
+ * @return ipasir2_errorcode
+ * 
+ * Required state: INPUT or SAT or UNSAT
+ * State after: INPUT or SAT or UNSAT
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver,
   void (*callback)(void* solver, int** literals, void* meta_data), void* state);
 
 
+/**
+ * @brief Return the number of variables on the solver's assignment stack.
+ * 
+ * In INPUT state, the number of variables on the assignment stack is 
+ * the number of variables in the current partial (or full) assignment, 
+ * e.g., if a decision limit was reached during search.
+ * 
+ * In SAT state, the number of variables on the assignment stack is
+ * the number of variables in the satisfying assignment.
+ * 
+ * @param solver SAT solver
+ * @param &lit Number of variables on the assignment stack
+ * @return ipasir2_errorcode
+ * 
+ * Required state: INPUT or SAT
+ * State after: INPUT or SAT
+ */
 
-/**************************************************************************/
-/************************** IPASIR 1 Land begins **************************/
-/**************************************************************************/
+IPASIR_API ipasir2_errorcode ipasir2_assignment_size(void* solver, int32_t* lit);
+
+/**
+ * @brief Return the assignment at the given position on the solver's assignment stack.
+ * 
+ * This function is intended to be used after a limited call to ipasir2_solve.
+ * The provided assignment must be guaranteed to not be refuted by unit-propagation.
+ * 
+ * In INPUT state, the assignment at the given position on the assignment stack is
+ * the assignment of the variable at the given position in the current partial assignment,
+ * e.g., if a decision limit was reached during search.
+ * 
+ * In SAT state, the assignment at the given position on the assignment stack is
+ * the assignment of the variable at the given position in the satisfying assignment.
+ * The value of ipasir2_val(lit) must be equal to the assignment at the given position.
+ * 
+ * @param solver SAT solver
+ * @param index Index of the assignment on the assignment stack
+ * @param &lit Assignment at the given position on the assignment stack
+ * @return ipasir2_errorcode
+ * 
+ * Required state: INPUT or SAT
+ * State after: INPUT or SAT
+ */
+
+IPASIR_API ipasir2_errorcode ipasir2_assignment(void* solver, int32_t index, int32_t* lit);
+
 
 /**
  * @brief Return the name and the version of the incremental SAT solver library.
- * 
- * New in IPASIR 2.0: Return error code, moved result to parameter
  * 
  * @param const char* output parameter returns library name and version
  * @return ipasir2_errorcode
@@ -248,9 +251,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver,
 IPASIR_API ipasir2_errorcode ipasir2_signature(char const** result);
 
 /**
- * @brief Construct a new solver instance and return a pointer to it.
- * 
- * New in IPASIR 2.0: Return error code, moved result to parameter
+ * @brief Construct a new solver instance and set result to return a pointer to it.
  * 
  * Use the returned pointer as the first parameter in each of the following functions.
  *
@@ -265,8 +266,6 @@ IPASIR_API ipasir2_errorcode ipasir2_init(void** result);
 /**
  * @brief Release the given solver (destructor). 
  * 
- * New in IPASIR 2.0: Return error code
- * 
  * Release all solver resources and allocated memory. 
  * The solver pointer cannot be used for any purposes after this call.
  * 
@@ -280,8 +279,6 @@ IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
 
 /**
  * @brief Add the given literal into the currently added clause or finalize the clause with a 0. 
- * 
- * New in IPASIR 2.0: Return error code
  * 
  * Clauses added this way cannot be removed. 
  * The addition of removable clauses can be simulated using activation literals and assumptions.
@@ -299,8 +296,6 @@ IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t lit_or_zero);
 /**
  * @brief Add an assumption for the next SAT search. 
  * 
- * New in IPASIR 2.0: Return error code
- * 
  * The assumption will be used in the next call of ipasir2_solve(). 
  * After calling ipasir2_solve() all the previously added assumptions are cleared.
  * 
@@ -315,8 +310,6 @@ IPASIR_API ipasir2_errorcode ipasir2_assume(void* solver, int32_t lit);
 
 /**
  * @brief Solve the formula with specified clauses under the specified assumptions.
- * 
- * New in IPASIR 2.0: Return error code, moved result to last parameter
  * 
  * If the formula is satisfiable the function returns 10 
  * and the state of the solver is changed to SAT. 
@@ -338,8 +331,6 @@ IPASIR_API ipasir2_errorcode ipasir2_solve(void* solver, int* result);
 
 /**
  * @brief Return the truth value of the given literal in the found satisfying assignment.
- * 
- * New in IPASIR 2.0: Return error code, moved result to last parameter
  * 
  * Return 'lit' if True, '-lit' if False; 'ipasir2_val(lit)'
  * may return '0' if the found assignment is satisfying for both
@@ -367,8 +358,6 @@ IPASIR_API ipasir2_errorcode ipasir2_val(void* solver, int32_t lit, int32_t* res
  * unsatisfiability of the formula under the assumptions
  * used for the last SAT search. Return 1 if so, 0 otherwise.
  * 
- * New in IPASIR 2.0: Return error code, moved result to last parameter
- * 
  * The formula remains unsatisfiable even just under assumption literals
  * for which ipasir2_failed() returns 1.  Note that for literals 'lit'
  * which are not assumption literals, the behavior of
@@ -391,8 +380,6 @@ IPASIR_API ipasir2_errorcode ipasir2_failed(void* solver, int32_t lit, int* resu
 /**
  * @brief Set a callback function used to indicate a termination requirement to the solver.
  * 
- * New in IPASIR 2.0: Return error code
- * 
  * The solver will periodically call this function and
  * check its return value during the search.  The ipasir2_set_terminate
  * function can be called in any state of the solver, the state remains
@@ -414,8 +401,6 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, int
 
 /**
  * @brief Set a callback function for extracting learned clauses from the solver. 
- * 
- * New in IPASIR 2.0: Removed the max_length parameter.
  *  
  * The solver will call this function for each learned clause. 
  * 
