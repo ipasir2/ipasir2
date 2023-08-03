@@ -18,6 +18,6 @@ int main() {
     } else {
         printf("UNKNOWN\n");
     }
-    ipasir2_release(&solver);
+    ipasir2_release(solver);
     return 0;
 }
