@@ -19,7 +19,7 @@ int main() {
     else cout << "ipasir2_options() returned " << err << endl;
 
     while (option->name != nullptr) {
-        printf("%s %i %i %i\n", option->name, option->type, option->minimum, option->maximum);
+        printf("%s %i %i %i\n", option->name, option->type, option->min._int, option->max._int);
         ++option;
     }
 
