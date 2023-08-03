@@ -52,11 +52,11 @@ endfunction()
 
 function(load_cms)
     set(CRYPTOMINISAT_DIR ${CMAKE_CURRENT_BINARY_DIR}/solvers/src/cms_external)
-    set(CRYPTOMINISAT_LIB "${CRYPTOMINISAT_DIR}-build/lib/libcryptominisat5.so")
+    set(CRYPTOMINISAT_LIB "${CRYPTOMINISAT_DIR}-build/lib/libipasircryptominisat5.so")
     message(STATUS "CryptoMinisat Library: ${CRYPTOMINISAT_LIB}")
     if (EXISTS ${CRYPTOMINISAT_LIB})
         message(STATUS "CryptoMinisat Found")
-        add_library(cms STATIC IMPORTED)
+        add_library(cms SHARED IMPORTED)
         set_target_properties(cms PROPERTIES IMPORTED_LOCATION "${CRYPTOMINISAT_LIB}")
     else()
         message(STATUS "Injecting External Project for Fetching and Building CryptoMinisat")
@@ -66,9 +66,10 @@ function(load_cms)
             GIT_TAG master
             PREFIX solvers
             INSTALL_COMMAND ""
+            CMAKE_ARGS "-DIPASIR=1"
             BUILD_BYPRODUCTS "${CRYPTOMINISAT_LIB}"
         )
-        add_library(cms STATIC IMPORTED)
+        add_library(cms SHARED IMPORTED)
         add_dependencies(cms cms_external)
         set_target_properties(cms PROPERTIES IMPORTED_LOCATION "${CRYPTOMINISAT_LIB}")
     endif()
