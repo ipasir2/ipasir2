@@ -4,6 +4,13 @@
 #include "ipasir2.h"
 #include "util/ipasir2_util.h"
 
+
+const std::string red("\033[0;31m");
+const std::string green("\033[0;32m");
+const std::string blue("\033[0;34m");
+const std::string reset("\033[0m");
+
+
 void print_options(void* solver) {
     ipasir2_option const* option;
     ipasir2_errorcode err = ipasir2_options(solver, &option);
@@ -12,16 +19,16 @@ void print_options(void* solver) {
         return;
     }
     while (option->name != nullptr) {
-        std::cout << *option << std::endl;
+        std::cout << *option;
         ++option;
+        if (option->name != nullptr) {
+            std::cout << "; ";
+        }
     }
+    std::cout << std::endl;
 }
 
 void print_available(std::string function, ipasir2_errorcode err) {
-    const std::string red("\033[0;31m");
-    const std::string green("\033[0;32m");
-    const std::string blue("\033[0;34m");
-    const std::string reset("\033[0m");
     switch (err) {
         case IPASIR_E_OK:
             std::cout << green << "[available] " << reset << function << " (IPASIR_E_OK)" << std::endl;
@@ -104,13 +111,13 @@ ipasir2_errorcode probe_availability_of_options(void* solver) {
 
     if (err) return err;
 
-    if (option != nullptr) {
+    if (option->name != nullptr) {
         err = ipasir2_set_option(solver, option->name, option->min);
         print_available("ipasir2_set_option()", err);
         return err;
     }
     else {
-        std::cout << "[unavailable] no actual options to set" << std::endl;
+        std::cout << blue << "[unavailable] " << reset << "no actual options to set" << std::endl;
         return IPASIR_E_UNSUPPORTED;
     }
 }
@@ -122,7 +129,7 @@ int main() {
 
     err = ipasir2_signature(&solver_name);
     if (err) {
-        std::cout << "[critical] ipasir2_signature() returned " << err << std::endl;
+        std::cout << red << "[critical] " << reset << "ipasir2_signature() returned " << err << std::endl;
         return 1;
     }
 
@@ -130,13 +137,13 @@ int main() {
     
     err = ipasir2_init(&solver);
     if (err) {
-        std::cout << "[critical] ipasir2_init() returned " << err << std::endl;
+        std::cout << red << "[critical] " << reset << "ipasir2_init() returned " << err << std::endl;
         return 1;
     }
 
     err = probe_availabilty_of_basic_functionality(solver);
     if (err) {
-        std::cout << "[critical] basic functionality not available" << std::endl;
+        std::cout << red << "[critical] " << reset << "basic functionality not available" << std::endl;
         return 1;
     }
 
@@ -150,7 +157,7 @@ int main() {
 
     err = ipasir2_release(solver);
     if (err) {
-        std::cout << "[critical] ipasir2_release() returned " << err << std::endl;
+        std::cout << red << "[critical] " << reset << "ipasir2_release() returned " << err << std::endl;
         return 1;
     }
 }
