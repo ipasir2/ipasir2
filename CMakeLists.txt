@@ -17,13 +17,13 @@ set(SOLVERS
 
 foreach(solver ${SOLVERS})
     set(tname test_${solver})
-    add_executable(${tname} test.cc)
+    add_executable(${tname} test/test.cc)
     target_include_directories(${tname} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     add_dependencies(${tname} ${solver})
     target_link_libraries(${tname} ${solver})
     
-    set(tname testoptions_${solver})
-    add_executable(${tname} print_all_options.cc)
+    set(tname printoptions_${solver})
+    add_executable(${tname} util/print_all_options.cc)
     target_include_directories(${tname} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     add_dependencies(${tname} ${solver})
     target_link_libraries(${tname} ${solver})
