@@ -1,11 +1,9 @@
 /**
- * @file ipasir2.h
- * @author Markus Iser, Felix Kutzner, Armin Biere, Tomas Balyo, Carsten Sinz
- * @brief Re-entrant Incremental SAT Solver API (IPASIR2)
- * @version 2.0
- * @date 2022-11-02
- *  
- * @copyright Copyright (c) 2022
+ * IPASIR-2: The Re-entrant Incremental SAT Solver API (IPASIR) Version 2.0
+ * 
+ * This header file defines the API for incremental SAT solvers.
+ * 
+ * (c) 2022 by the IPASIR authors 
  */
 #ifndef INTERFACE_IPASIR2_H_
 #define INTERFACE_IPASIR2_H_
@@ -196,7 +194,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, char const* name, 
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT or SAT or UNSAT
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver, void* data, void (*import)(void* data, int** literals));
+IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver, void* data, void (*import)(void* data, int32_t** literals));
 
 
 /**

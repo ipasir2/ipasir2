@@ -1,38 +1,17 @@
+/**
+ * Some tests for the ipasir2 interface.
+ * 
+ * @author Markus Iser 
+ */
+
 #include <stdio.h>
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
 #include "ipasir2.h"
+#include "util/ipasir2_util.h"
 
-#define RESULT_UNKNOWN 0
-#define RESULT_SAT 10
-#define RESULT_UNSAT 20
-
-typedef std::initializer_list<int> clause;
-typedef std::initializer_list<clause> cnf;
-
-ipasir2_errorcode ipasir2_add_clause(void* solver, clause c) {
-    ipasir2_errorcode ret;
-    for (auto l : c) {
-        ret = ipasir2_add(solver, l);
-        if (ret) {
-            return ret;
-        }
-    }
-    return ipasir2_add(solver, 0);
-}
-
-ipasir2_errorcode ipasir2_add_formula(void* solver, cnf c) {
-    ipasir2_errorcode ret;
-    for (auto cl : c) {
-        ret = ipasir2_add_clause(solver, cl);
-        if (ret) {
-            return ret;
-        }
-    }
-    return IPASIR_E_OK;
-}
 
 TEST_CASE("Trivial SAT / UNSAT") {
     ipasir2_errorcode ret;
