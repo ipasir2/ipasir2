@@ -95,8 +95,9 @@ void probe_availability_of_callbacks(void* solver) {
 
     print_available("ipasir2_set_learn()", err);
 
-    err = ipasir2_set_import_redundant_clause(solver, data, [](void* data, int32_t** clause) {
+    err = ipasir2_set_import_redundant_clause(solver, data, [](void* data) -> int32_t const* {
             std::cout << "imported a redundant clause" << std::endl;
+	    return nullptr;
         });
 
     print_available("ipasir2_set_import_redundant_clause()", err);

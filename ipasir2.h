@@ -177,24 +177,28 @@ IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, char const* name, 
 
 
 /**
- * @brief Asynchronous Import of Learned Clauses
- * 
- * Set a callback which the internal solver may call while inside ipasir2_solve for importing redundant clauses (like “consume” in Lingeling). 
- * The application has the responsibility to appropriately buffer redundant clauses until the solver decides to import (some of) them via the defined callback. 
- * 
- * Effect of Callback:
- *  - literals* points to the next learned clause (zero-terminated like in ipasir2_set_learn and ipasir2_add)
- *  - literals* points to nullptr if there is no clause to consume
- * 
+ * @brief Sets a callback for asynchronous import of learned clauses
+ *
+ * Sets a callback which may be called by the solver during ipasir2_solve()
+ * for importing redundant clauses (like “consume” in Lingeling). The
+ * application has the responsibility to appropriately buffer redundant clauses
+ * until the solver decides to import (some of) them via the defined callback.
+ *
+ * The \p import callback must return a pointer to the next redundant clause to
+ * import (zero-terminated like in ipasir2_set_learn()), or nullptr if there is
+ * no further clause to import. If a pointer to a clause is returned, that
+ * clause must be valid until \p import is called again or ipasir2_solve()
+ * terminates, whichever happens first.
+ *
  * @param solver SAT solver
- * @param callback Callback function
- * @param data State object passed to callback function
+ * @param import Callback function
+ * @param data State object passed to \p import
  * @return ipasir2_errorcode
- * 
+ *
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT or SAT or UNSAT
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver, void* data, void (*import)(void* data, int32_t** literals));
+IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver, void* data, int32_t const* (*import)(void* data));
 
 
 /**
