@@ -177,7 +177,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, char const* name, 
 
 
 /**
- * @brief Sets a callback for asynchronous import of learned clauses
+ * @brief Sets a callback for asynchronous import of redundant clauses
  *
  * Sets a callback which may be called by the solver during ipasir2_solve()
  * for importing redundant clauses (like “consume” in Lingeling). The
