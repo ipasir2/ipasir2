@@ -412,7 +412,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, int
  * The ipasir2_set_learn function can be called in any state of the solver, 
  * the state remains unchanged after the call. 
  * 
- * The callback function is of the form "void learn(void* data, int* clause)"
+ * The callback function has the signature "void learn(void* data, int32_t const* clause)"
  *   - the solver calls the callback function with the parameter "data"
  *     having the value passed in the 2nd parameter of the ipasir2_set_learn() function.
  *   - the argument "clause" is a pointer to a null terminated integer array 
@@ -433,7 +433,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, int
  * Required state: INPUT or SAT or UNSAT
  * State after: INPUT or SAT or UNSAT
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_learn(void* solver, void* data, void (*learned)(void* data, int32_t* clause));
+IPASIR_API ipasir2_errorcode ipasir2_set_learn(void* solver, void* data, void (*learned)(void* data, int32_t const* clause));
 
 #ifdef __cplusplus
 }  // closing extern "C"
