@@ -89,7 +89,7 @@ void probe_availability_of_callbacks(void* solver) {
 
     print_available("ipasir2_set_terminate()", err);
 
-    err = ipasir2_set_learn(solver, data, [](void* data, int32_t* clause) {
+    err = ipasir2_set_learn(solver, data, [](void* data, int32_t const* clause) {
             std::cout << "learned a clause" << std::endl;
         });
 
