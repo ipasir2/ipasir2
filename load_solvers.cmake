@@ -52,7 +52,7 @@ endfunction()
 
 function(load_cms)
     set(CRYPTOMINISAT_DIR ${CMAKE_CURRENT_BINARY_DIR}/solvers/src/cms_external)
-    set(CRYPTOMINISAT_LIB "${CRYPTOMINISAT_DIR}-build/lib/libipasircryptominisat5.so")
+    set(CRYPTOMINISAT_LIB "${CRYPTOMINISAT_DIR}-build/lib/libipasircryptominisat5${CMAKE_SHARED_LIBRARY_SUFFIX}")
     message(STATUS "CryptoMinisat Library: ${CRYPTOMINISAT_LIB}")
     if (EXISTS ${CRYPTOMINISAT_LIB})
         message(STATUS "CryptoMinisat Found")
