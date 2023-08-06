@@ -3,6 +3,9 @@ include(ExternalProject)
 
 project(IPASIR-2)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/load_solvers.cmake)
 
 load_cms()
