@@ -19,8 +19,8 @@ ipasir2_errorcode ipasir2_options(void* S, ipasir2_option const** result) {
 ipasir2_errorcode ipasir2_set_option(void* S, char const* name, void const* value) {
     return IPASIR_E_UNSUPPORTED;
 }
-ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver,
-  void (*callback)(void* solver, int** literals, void* meta_data), void* state) {
+
+ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver, void* data, int32_t const* (*import)(void* data)) {
     return IPASIR_E_UNSUPPORTED;
 }
 
