@@ -52,16 +52,29 @@ std::string ipasir2_errorcode_to_string(ipasir2_errorcode err) {
             return "IPASIR_E_UNKNOWN";
         case IPASIR_E_INVALID_STATE:
             return "IPASIR_E_INVALID_STATE";
-        case IPASIR_E_OUT_OF_TIME:
-            return "IPASIR_E_OUT_OF_TIME";
-        case IPASIR_E_OUT_OF_MEM:
-            return "IPASIR_E_OUT_OF_MEM";
         case IPASIR_E_OPTION_UNKNOWN:
             return "IPASIR_E_OPTION_UNKNOWN";
         case IPASIR_E_OPTION_INVALID_VALUE:
             return "IPASIR_E_OPTION_INVALID_VALUE";
         default:
             return "UNKNOWN ERROR CODE";
+    }
+}
+
+std::string ipasir2_state_to_string(ipasir2_state state) {
+    switch (state) {
+        case IPASIR2_STATE_CONFIG:
+            return "IPASIR2_STATE_CONFIG";
+        case IPASIR2_STATE_INPUT:
+            return "IPASIR2_STATE_INPUT";
+        case IPASIR2_STATE_SAT:
+            return "IPASIR2_STATE_SAT";
+        case IPASIR2_STATE_UNSAT:
+            return "IPASIR2_STATE_UNSAT";
+        case IPASIR2_STATE_SOLVING:
+            return "IPASIR2_STATE_SOLVING";
+        default:
+            return "UNKNOWN STATE";
     }
 }
 
@@ -72,11 +85,10 @@ std::ostream& operator<<(std::ostream& os, const ipasir2_errorcode& err) {
 
 std::ostream& operator<<(std::ostream& os, const ipasir2_option& option) {
     os << option.name << ": ";
-    if (option.type == FLOAT) {
-        os << "FLOAT(" << option.min._flt << "," << option.max._flt << ")";
-    }
-    else if (option.type == INT) {
-        os << "INT(" << option.min._int << "," << option.max._int << ")";
+    os << "(" << option.min << "," << option.max << ") ";
+    os << ipasir2_state_to_string(option.max_state);
+    if (option.tunable) {
+        os << " tunable";
     }
     return os;
 }
