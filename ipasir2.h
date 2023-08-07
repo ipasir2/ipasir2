@@ -56,34 +56,16 @@ extern "C" {
 #endif
 
 
-
-/**
- * #################################################################################################################
- * ##### IPASIR 2.0 Draft
- * #####
- * ##### The following is new in IPASIR 2.0:
- * #####
- * ##### - Configuration:    A generic configuration interface
- * ##### - Clause Sharing:   A callback interface for asynchronous import of shared clauses
- * ##### - Error Codes:      All functions now return an error code; values are returned via output parameters
- * ##### - Assignment Stack: A new interface for accessing the solver's assignment stack in INPUT and SAT state
- * #####
- * #################################################################################################################
- */
-
-
 /**
  * @brief IPASIR 2.0 Error Codes
  */
 typedef enum ipasir2_errorcode {
-  IPASIR_E_OK = 0,
-  IPASIR_E_UNKNOWN = 1, // to be used if no other code applies
-  IPASIR_E_UNSUPPORTED = 2,
-  IPASIR_E_INVALID_STATE = 3, // to be used if a function is called in a state which is not allowed by the ipasir state machine
-  IPASIR_E_OUT_OF_TIME = 4,
-  IPASIR_E_OUT_OF_MEM = 5,
-  IPASIR_E_OPTION_UNKNOWN = 6,
-  IPASIR_E_OPTION_INVALID_VALUE = 7
+    IPASIR_E_OK = 0,
+    IPASIR_E_UNKNOWN = 1, // to be used if no other code applies
+    IPASIR_E_UNSUPPORTED = 2,
+    IPASIR_E_INVALID_STATE = 3, // to be used if a function is called in a state which is not allowed by the ipasir state machine
+    IPASIR_E_OPTION_UNKNOWN = 4,
+    IPASIR_E_OPTION_INVALID_VALUE = 5
 } ipasir2_errorcode;
 
 
@@ -96,15 +78,7 @@ typedef enum ipasir2_errorcode {
  * If a solver provides an option from the "ipasir." namespace, its behavior must be as specified in the IPASIR-2 specification.
  * If a solver does not support a given option, it must return IPASIR_E_OPTION_UNKNOWN when the option is set.
  * 
- * The following options are defined by the IPASIR-2 specification:
- * 
- * - ipasir.preprocessing: 
- * - ipasir.preprocessing.subsumption: int, minimum: 0, maximum: 1
- * - ipasir.preprocessing.bve: int, minimum: 0, maximum: 1
- * - ipasir.preprocessing.sbva: int, minimum: 0, maximum: 1
- * - ...
- * 
- * - ipasir.limits:
+ * To cover setting of limits:
  * - ipasir.limits.conflicts: int, minimum: -1, maximum: INT_MAX, default: -1
  *    - -1: no conflict limit
  *    - 0: no conflicts (exit on first conflict)
@@ -114,30 +88,49 @@ typedef enum ipasir2_errorcode {
  *    - 0: no decisions (only unit propagation)
  *    - n: at most n decisions
  * - ...
+ * 
+ * To cover phase setting:
+ * - ipasir.phase.initial: set the initial phase of a variable x to true if value = x, false if value = -x
+ * - ipasir.phase.initial.all: int, minimum: -1, maximum: 1, default: 0
+ *   - -1: set all variables to false
+ *   - 1: set all variables to true
+ *   - 0: use the default phase initialization of the solver
+ * 
+ * To cover enabling/disabling preprocessing:
+ * - ipasir.preprocessing: ...
+ * 
+ * 
  */
 
-typedef enum ipasir2_option_type {
-    INT = 0,
-    FLOAT = 1
-} ipasir2_option_type;
-
-typedef union ipasir2_option_value {
-    int _int;
-    float _flt;
-} ipasir2_option_value;
+/**
+ * @brief Specification of states for the IPASIR state machine
+ * @TODO: weave-in new state "config" everywhere
+ */
+typedef enum ipasir2_state {
+    IPASIR2_STATE_CONFIG = 0,
+    IPASIR2_STATE_INPUT = 1, // a.k.a. UNKOWN
+    IPASIR2_STATE_SAT = 2,
+    IPASIR2_STATE_UNSAT = 3,
+    IPASIR2_STATE_SOLVING = 4,
+} ipasir2_state;
 
 typedef struct ipasir2_option {
-    /// identifier for the option
+    /// @brief identifier of the option
     char const* name;
 
-    /// @brief type identifier
-    ipasir2_option_type type;
-
     /// @brief minimum value
-    ipasir2_option_value min;
+    int64_t min;
 
     /// @brief maximum value
-    ipasir2_option_value max;
+    int64_t max;
+
+    /// @brief allowed states in which the option is allowed to be set
+    /// larger ones shall entail smaller ones for the following partial order: CONFIG < SAT/UNSAT/INPUT < SOLVING 
+    ipasir2_state max_state;
+
+    /// @brief specifies if the option is eligible for tuning
+    bool tunable;
+
 } ipasir2_option;
 
 
@@ -152,8 +145,8 @@ typedef struct ipasir2_option {
  * @param result Output parameter: pointer to NULL-terminated array of pointers to ipasir2_option objects
  * @return ipasir2_errorcode
  * 
- * Required state: INPUT or SAT or UNSAT
- * State after: INPUT or SAT or UNSAT
+ * Required state: CONFIG or INPUT or SAT or UNSAT
+ * State after: same as before
  * 
  * @return pointer to NULL-terminated array of pointers to ipasir2_option objects.
  */
@@ -168,83 +161,13 @@ IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const*
  * @return ipasir2_errorcode:
  *  - IPASIR_E_OPTION_UNKNOWN if the option is not supported by the solver
  *  - IPASIR_E_INVALID_CONFIG if the option value is invalid
+ *  - IPASIR_E_INVALID_STATE if the option is not allowed to be set in the current state
  *  - IPASIR_E_OK otherwise
  * 
- * Required state: INPUT or SAT or UNSAT
- * State after: INPUT
+ * Required state: any state <= ipasir2_option.max_state
+ * State after: same as before
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, char const* name, ipasir2_option_value value);
-
-
-/**
- * @brief Sets a callback for asynchronous import of redundant clauses
- *
- * Sets a callback which may be called by the solver during ipasir2_solve()
- * for importing redundant clauses (like “consume” in Lingeling). The
- * application has the responsibility to appropriately buffer redundant clauses
- * until the solver decides to import (some of) them via the defined callback.
- *
- * The \p import callback must return a pointer to the next redundant clause to
- * import (zero-terminated like in ipasir2_set_learn()), or nullptr if there is
- * no further clause to import. If a pointer to a clause is returned, that
- * clause must be valid until \p import is called again or ipasir2_solve()
- * terminates, whichever happens first.
- *
- * @param solver SAT solver
- * @param import Callback function
- * @param data State object passed to \p import
- * @return ipasir2_errorcode
- *
- * Required state: INPUT or SAT or UNSAT
- * State after: INPUT or SAT or UNSAT
- */
-IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver, void* data, int32_t const* (*import)(void* data));
-
-
-/**
- * @brief Return the number of variables on the solver's assignment stack.
- * 
- * In INPUT state, the number of variables on the assignment stack is 
- * the number of variables in the current partial (or full) assignment, 
- * e.g., if a decision limit was reached during search.
- * 
- * In SAT state, the number of variables on the assignment stack is
- * the number of variables in the satisfying assignment.
- * 
- * @param solver SAT solver
- * @param &lit Number of variables on the assignment stack
- * @return ipasir2_errorcode
- * 
- * Required state: INPUT or SAT
- * State after: INPUT or SAT
- */
-
-IPASIR_API ipasir2_errorcode ipasir2_assignment_size(void* solver, int32_t* lit);
-
-/**
- * @brief Return the assignment at the given position on the solver's assignment stack.
- * 
- * This function is intended to be used after a limited call to ipasir2_solve.
- * The provided assignment must be guaranteed to not be refuted by unit-propagation.
- * 
- * In INPUT state, the assignment at the given position on the assignment stack is
- * the assignment of the variable at the given position in the current partial assignment,
- * e.g., if a decision limit was reached during search.
- * 
- * In SAT state, the assignment at the given position on the assignment stack is
- * the assignment of the variable at the given position in the satisfying assignment.
- * The value of ipasir2_val(lit) must be equal to the assignment at the given position.
- * 
- * @param solver SAT solver
- * @param index Index of the assignment on the assignment stack
- * @param &lit Assignment at the given position on the assignment stack
- * @return ipasir2_errorcode
- * 
- * Required state: INPUT or SAT
- * State after: INPUT or SAT
- */
-
-IPASIR_API ipasir2_errorcode ipasir2_assignment(void* solver, int32_t index, int32_t* lit);
+IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, char const* name, int64_t value);
 
 
 /**
@@ -434,6 +357,95 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, int
  * State after: INPUT or SAT or UNSAT
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_learn(void* solver, void* data, void (*learned)(void* data, int32_t const* clause));
+
+
+/**
+ * @brief Sets a callback to notify about changes in the current partial assignment under analysis
+ * 
+ * Changes are returned for all variables that have been assigned or unassigned since the last call to the callback.
+ * 
+ * Assigned and backtrack are non-intersecting regarding variables (-> implication on frequency of calls)
+ * 
+ * @TODO: frequency of calls: at least once per decisions. relate to other api functions
+ * @TODO: is_decision must have same lenght as assigned.
+ * @TODO: previous decisions which are now implied ones must be notified as well (even if value did not change). 
+ * @TODO: elaborete on correctness issues emerging from imported clauses
+ * 
+ * @TODO:
+ * - decision-level can not be necessarily be determined by recording and analysing those notifications alone. 
+ * - applications keeping track of decision levels can not check what is now implied at level zero (see IPASIR-UP: is_fixed)
+ * 
+ * @param solver 
+ * @param data 
+ * @param notify
+ * @return ipasir2_errorcode 
+ * 
+ * Required state: CONFIG
+ */
+IPASIR_API ipasir2_errorcode ipasir2_set_notify_assignment(void* solver, void* data, 
+    void (*notify)(void* data, int32_t const* assigned, int32_t const* backtrack, int8_t const* is_decision));
+
+
+/**
+ * @brief Sets a callback for asynchronous import of redundant clauses
+ *
+ * Sets a callback which may be called by the solver during ipasir2_solve()
+ * for importing redundant clauses (like “consume” in Lingeling). The
+ * application has the responsibility to appropriately buffer redundant clauses
+ * until the solver decides to import (some of) them via the defined callback.
+ *
+ * The \p import callback must return a pointer to the next redundant clause to
+ * import (zero-terminated like in ipasir2_set_learn()), or nullptr if there is
+ * no further clause to import. If a pointer to a clause is returned, that
+ * clause must be valid until \p import is called again or ipasir2_solve()
+ * terminates, whichever happens first.
+ * 
+ * Applications using that callback must make sure that the imported clauses 
+ * are entailed by the formula given by ipasir2_add() calls.
+ *
+ * @param solver SAT solver
+ * @param import Callback function
+ * @param data State object passed to \p import
+ * @return ipasir2_errorcode
+ *
+ * Required state: INPUT or SAT or UNSAT
+ * State after: INPUT or SAT or UNSAT
+ */
+IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver, void* data, int32_t const* (*import)(void* data));
+
+
+/**
+ * @brief Sets a callback for asynchronous import of redundant clauses
+ *
+ * Sets a callback which may be called by the solver during ipasir2_solve()
+ * for importing irredundant clauses (like “consume” in Lingeling). The
+ * application has the responsibility to appropriately buffer redundant clauses
+ * until the solver decides to import (some of) them via the defined callback.
+ *
+ * The \p import callback must return a pointer to the next redundant clause to
+ * import (zero-terminated like in ipasir2_set_learn()), or nullptr if there is
+ * no further clause to import. If a pointer to a clause is returned, that
+ * clause must be valid until \p import is called again or ipasir2_solve()
+ * terminates, whichever happens first.
+ * 
+ * Applications must make sure that imported clauses contain only variables 
+ * as indicated by \p allowed. If \p allowed is nullptr, all variables are allowed.
+ * 
+ * Solver provides must take care of correctness with regard to allowed variables. 
+ * Either freeze or reconstruct on demand.
+ * 
+ * Note: Function is eligible to be called in any state.
+ *
+ * @param solver SAT solver
+ * @param data State object passed to \p import
+ * @param allowed Array of allowed variables (terminated by 0); nullptr if all variables are allowed
+ * @param import Callback function
+ * @return ipasir2_errorcode
+ *
+ * Required state: <=SOLVE
+ * State after: <=SOLVE
+ */
+IPASIR_API ipasir2_errorcode ipasir2_set_import_irredundant_clause(void* solver, void* data, int32_t* allowed, int32_t const* (*import)(void* data));
 
 #ifdef __cplusplus
 }  // closing extern "C"
