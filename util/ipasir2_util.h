@@ -17,7 +17,7 @@
 #define RESULT_SAT 10
 #define RESULT_UNSAT 20
 
-typedef std::initializer_list<int> clause;
+typedef std::initializer_list<int32_t> clause;
 typedef std::initializer_list<clause> cnf;
 
 ipasir2_errorcode ipasir2_add_clause(void* solver, clause c) {
