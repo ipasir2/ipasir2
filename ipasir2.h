@@ -161,6 +161,20 @@ IPASIR_API ipasir2_errorcode ipasir2_signature(char const** result);
  */
 IPASIR_API ipasir2_errorcode ipasir2_init(void** result);
 
+/**
+ * @brief Release the given solver (destructor). 
+ * 
+ * Release all solver resources and allocated memory. 
+ * The solver pointer cannot be used for any purposes after this call.
+ * 
+ * @param solver SAT solver instance to be released
+ * @return ipasir2_errorcode
+ *
+ * Required state: INPUT or SAT or UNSAT
+ * State after: undefined
+ */
+IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
+
 /** 
  * @brief Return IPASIR Configuration Options
  * 
@@ -193,20 +207,6 @@ IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const*
  * State after: same as before
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, char const* name, int64_t value);
-
-/**
- * @brief Release the given solver (destructor). 
- * 
- * Release all solver resources and allocated memory. 
- * The solver pointer cannot be used for any purposes after this call.
- * 
- * @param solver SAT solver instance to be released
- * @return ipasir2_errorcode
- *
- * Required state: INPUT or SAT or UNSAT
- * State after: undefined
- */
-IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
 
 /**
  * @brief Add the given literal into the currently added clause or finalize the clause with a 0. 
