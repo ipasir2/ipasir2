@@ -103,17 +103,24 @@ typedef enum ipasir2_errorcode {
  */
 
 /**
- * @brief Specification of states for the IPASIR state machine
- * @TODO: weave-in new state "config" everywhere
+ * @brief States of the IPASIR state machine
+ * 
+ * States are ordered by the following partial order:
+ *  CONFIG < SAT/UNSAT/INPUT < SOLVING
  */
 typedef enum ipasir2_state {
     IPASIR2_STATE_CONFIG = 0,
-    IPASIR2_STATE_INPUT = 1, // a.k.a. UNKOWN
+    IPASIR2_STATE_INPUT = 1,
     IPASIR2_STATE_SAT = 2,
     IPASIR2_STATE_UNSAT = 3,
     IPASIR2_STATE_SOLVING = 4,
 } ipasir2_state;
 
+
+/**
+ * @brief IPASIR Configuration Options
+ * 
+ */
 typedef struct ipasir2_option {
     /// @brief identifier of the option
     char const* name;
@@ -124,50 +131,13 @@ typedef struct ipasir2_option {
     /// @brief maximum value
     int64_t max;
 
-    /// @brief allowed states in which the option is allowed to be set
-    /// larger ones shall entail smaller ones for the following partial order: CONFIG < SAT/UNSAT/INPUT < SOLVING 
+    /// @brief maximum of states in which the option is allowed to be set
     ipasir2_state max_state;
 
     /// @brief specifies if the option is eligible for tuning
     bool tunable;
 
 } ipasir2_option;
-
-
-/** 
- * @brief Return IPASIR Configuration Options
- * 
- * The array contains all available options for the solver.
- * The array is owned by the solver and must not be freed by the caller.
- * Options in the namespace "ipasir." are reserved by IPASIR specification.
- * 
- * @param solver SAT solver
- * @param result Output parameter: pointer to NULL-terminated array of pointers to ipasir2_option objects
- * @return ipasir2_errorcode
- * 
- * Required state: CONFIG or INPUT or SAT or UNSAT
- * State after: same as before
- * 
- * @return pointer to NULL-terminated array of pointers to ipasir2_option objects.
- */
-IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const** result);
-
-/** 
- * @brief Set given IPASIR Configuration Option
- * 
- * @param solver SAT solver
- * @param name Option name
- * @param value Option value
- * @return ipasir2_errorcode:
- *  - IPASIR_E_OPTION_UNKNOWN if the option is not supported by the solver
- *  - IPASIR_E_INVALID_CONFIG if the option value is invalid
- *  - IPASIR_E_INVALID_STATE if the option is not allowed to be set in the current state
- *  - IPASIR_E_OK otherwise
- * 
- * Required state: any state <= ipasir2_option.max_state
- * State after: same as before
- */
-IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, char const* name, int64_t value);
 
 
 /**
@@ -190,6 +160,39 @@ IPASIR_API ipasir2_errorcode ipasir2_signature(char const** result);
  * State after: INPUT
  */
 IPASIR_API ipasir2_errorcode ipasir2_init(void** result);
+
+/** 
+ * @brief Return IPASIR Configuration Options
+ * 
+ * The array contains all available options for the solver.
+ * The array is owned by the solver and must not be freed by the caller.
+ * Options in the namespace "ipasir." are reserved by IPASIR specification.
+ * 
+ * @param solver SAT solver
+ * @param result Output parameter: pointer to NULL-terminated array of pointers to ipasir2_option objects
+ * @return ipasir2_errorcode
+ * 
+ * Required state: <=SOLVING
+ * State after: same as before
+ */
+IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const** result);
+
+/** 
+ * @brief Set given IPASIR Configuration Option
+ * 
+ * @param solver SAT solver
+ * @param name Option name
+ * @param value Option value
+ * @return ipasir2_errorcode:
+ *  - IPASIR_E_OPTION_UNKNOWN if the option is not supported by the solver
+ *  - IPASIR_E_INVALID_CONFIG if the option value is invalid
+ *  - IPASIR_E_INVALID_STATE if the option is not allowed to be set in the current state
+ *  - IPASIR_E_OK otherwise
+ * 
+ * Required state: <=ipasir2_options[name].max_state
+ * State after: same as before
+ */
+IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, char const* name, int64_t value);
 
 /**
  * @brief Release the given solver (destructor). 
@@ -322,8 +325,8 @@ IPASIR_API ipasir2_errorcode ipasir2_failed(void* solver, int32_t lit, int* resu
  * @param terminate 
  * @return ipasir2_errorcode
  *
- * Required state: INPUT or SAT or UNSAT
- * State after: INPUT or SAT or UNSAT
+ * Required state: <=INPUT
+ * State after: <=INPUT
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, int (*terminate)(void* data));
 
@@ -353,8 +356,8 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, int
  * @param learn 
  * @return ipasir2_errorcode
  * 
- * Required state: INPUT or SAT or UNSAT
- * State after: INPUT or SAT or UNSAT
+ * Required state: <=INPUT
+ * State after: <=INPUT
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_learn(void* solver, void* data, void (*learned)(void* data, int32_t const* clause));
 
@@ -364,23 +367,25 @@ IPASIR_API ipasir2_errorcode ipasir2_set_learn(void* solver, void* data, void (*
  * 
  * Changes are returned for all variables that have been assigned or unassigned since the last call to the callback.
  * 
- * Assigned and backtrack are non-intersecting regarding variables (-> implication on frequency of calls)
+ * The solver must ensure that variables in \p assigned and \p backtrack are non-intersecting.
+ * Note that this has implication on the minimum frequency of callback (in most cases, at least once per conflict).
+ * @TODO: we might want to have tighter restrictions on the frequency of calls
+ * The solver ensures that is_decision has same lenght as assigned.
  * 
- * @TODO: frequency of calls: at least once per decisions. relate to other api functions
- * @TODO: is_decision must have same lenght as assigned.
- * @TODO: previous decisions which are now implied ones must be notified as well (even if value did not change). 
- * @TODO: elaborete on correctness issues emerging from imported clauses
+ * Note that previous decisions which are now implied ones are notified as well (even if the value did not change).
+ * That can happen if the solver deduces or imports clauses which imply previous decisions.
  * 
- * @TODO:
- * - decision-level can not be necessarily be determined by recording and analysing those notifications alone. 
- * - applications keeping track of decision levels can not check what is now implied at level zero (see IPASIR-UP: is_fixed)
+ * @TODO: The decision-level can not be necessarily be determined by recording and analysing those notifications alone. 
+ * 
+ * @TODO: Applications keeping track of decision levels can not check what is now implied at level zero.
  * 
  * @param solver 
  * @param data 
  * @param notify
  * @return ipasir2_errorcode 
  * 
- * Required state: CONFIG
+ * Required state: <= INPUT
+ * State after: <= INPUT
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_notify_assignment(void* solver, void* data, 
     void (*notify)(void* data, int32_t const* assigned, int32_t const* backtrack, int8_t const* is_decision));
@@ -402,14 +407,18 @@ IPASIR_API ipasir2_errorcode ipasir2_set_notify_assignment(void* solver, void* d
  * 
  * Applications using that callback must make sure that the imported clauses 
  * are entailed by the formula given by ipasir2_add() calls.
+ * 
+ * Note: Function is eligible to be called in any state.
+ * 
+ * @TODO: State transition cases.
  *
  * @param solver SAT solver
  * @param import Callback function
  * @param data State object passed to \p import
  * @return ipasir2_errorcode
  *
- * Required state: INPUT or SAT or UNSAT
- * State after: INPUT or SAT or UNSAT
+ * Required state: <= SOLVING
+ * State after: <= SOLVING
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver, void* data, int32_t const* (*import)(void* data));
 
@@ -435,6 +444,8 @@ IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver, v
  * Either freeze or reconstruct on demand.
  * 
  * Note: Function is eligible to be called in any state.
+ * 
+ * @TODO: State transition cases.
  *
  * @param solver SAT solver
  * @param data State object passed to \p import
@@ -442,8 +453,8 @@ IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver, v
  * @param import Callback function
  * @return ipasir2_errorcode
  *
- * Required state: <=SOLVE
- * State after: <=SOLVE
+ * Required state: <=SOLVING
+ * State after: <=SOLVING
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_import_irredundant_clause(void* solver, void* data, int32_t* allowed, int32_t const* (*import)(void* data));
 
