@@ -62,10 +62,11 @@ extern "C" {
 typedef enum ipasir2_errorcode {
     IPASIR_E_OK = 0,
     IPASIR_E_UNKNOWN = 1, // to be used if no other code applies
-    IPASIR_E_UNSUPPORTED = 2,
-    IPASIR_E_INVALID_STATE = 3, // to be used if a function is called in a state which is not allowed by the ipasir state machine
-    IPASIR_E_OPTION_UNKNOWN = 4,
-    IPASIR_E_OPTION_INVALID_VALUE = 5
+    IPASIR_E_UNSUPPORTED,
+    IPASIR_E_UNSUPPORTED_FUNCTION_ARGUMENT,
+    IPASIR_E_INVALID_STATE, // to be used if a function is called in a state which is not allowed by the ipasir state machine
+    IPASIR_E_OPTION_UNKNOWN,
+    IPASIR_E_OPTION_INVALID_VALUE
 } ipasir2_errorcode;
 
 
@@ -90,8 +91,10 @@ typedef enum ipasir2_errorcode {
  * - ...
  * 
  * To cover phase setting:
- * - ipasir.phase.initial: set the initial phase of a variable x to true if value = x, false if value = -x
- * - ipasir.phase.initial.all: int, minimum: -1, maximum: 1, default: 0
+ * - ipasir.phase.initial: set the initial phase of the variables. 
+ *      this is an indexed option. 
+ *      use index=0 to set the phase of all variables.
+ *      use index=i to set the phase of variable i.
  *   - -1: set all variables to false
  *   - 1: set all variables to true
  *   - 0: use the default phase initialization of the solver
@@ -136,6 +139,9 @@ typedef struct ipasir2_option {
 
     /// @brief specifies if the option is eligible for tuning
     bool tunable;
+
+    /// @brief specifies if the option uses a variable index
+    bool indexed;
 
 } ipasir2_option;
 
@@ -191,11 +197,16 @@ IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
  */
 IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const** result);
 
+
+
+
 /** 
  * @brief Set given IPASIR Configuration Option
  * 
  * @param solver SAT solver
  * @param name Option name
+ * @param index Option index, if the option is not indexed, this parameter is ignored
+ * otherwise, it specifies a variable index, use zero if the value should be applied to all variables
  * @param value Option value
  * @return ipasir2_errorcode:
  *  - IPASIR_E_OPTION_UNKNOWN if the option is not supported by the solver
@@ -206,7 +217,8 @@ IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const*
  * Required state: <=ipasir2_options[name].max_state
  * State after: same as before
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, char const* name, int64_t value);
+IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, char const* name, int64_t index, int64_t value);
+
 
 /**
  * @brief Add the given literal into the currently added clause or finalize the clause with a 0. 
@@ -338,6 +350,9 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, int
  * The ipasir2_set_learn function can be called in any state of the solver, 
  * the state remains unchanged after the call. 
  * 
+ * The max_length parameter specifies the maximum length of the learned clauses to be returned.
+ * If this is -1 the solver can return clauses of any length.
+ * 
  * The callback function has the signature "void learn(void* data, int32_t const* clause)"
  *   - the solver calls the callback function with the parameter "data"
  *     having the value passed in the 2nd parameter of the ipasir2_set_learn() function.
@@ -353,13 +368,14 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, int
  * 
  * @param solver SAT solver
  * @param data 
+ * @param max_length
  * @param learn 
  * @return ipasir2_errorcode
  * 
  * Required state: <=INPUT
  * State after: <=INPUT
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_learn(void* solver, void* data, void (*learned)(void* data, int32_t const* clause));
+IPASIR_API ipasir2_errorcode ipasir2_set_learn(void* solver, void* data, int max_length, void (*learned)(void* data, int32_t const* clause));
 
 
 /**
@@ -378,6 +394,8 @@ IPASIR_API ipasir2_errorcode ipasir2_set_learn(void* solver, void* data, void (*
  * @TODO: The decision-level can not be necessarily be determined by recording and analysing those notifications alone. 
  * 
  * @TODO: Applications keeping track of decision levels can not check what is now implied at level zero.
+ * 
+ * @TODO: all info has to be exported before termination / switching to different state
  * 
  * @param solver 
  * @param data 
@@ -456,7 +474,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_import_redundant_clause(void* solver, v
  * Required state: <=SOLVING
  * State after: <=SOLVING
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_import_irredundant_clause(void* solver, void* data, int32_t* allowed, int32_t const* (*import)(void* data));
+IPASIR_API ipasir2_errorcode ipasir2_set_import_non_redundant_clause(void* solver, void* data, int32_t* allowed, int32_t const* (*import)(void* data));
 
 #ifdef __cplusplus
 }  // closing extern "C"
