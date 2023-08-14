@@ -57,7 +57,3 @@ TEST_CASE("Trivial SAT / UNSAT") {
     ret = ipasir2_release(solver);
     CHECK(ret == IPASIR2_E_OK);
 }
-
-// int main() {
-//     return 0;
-// }

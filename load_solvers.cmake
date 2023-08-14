@@ -14,8 +14,8 @@ function(load_cadical)
             GIT_REPOSITORY git@github.com:ipasir2/ipasir2_solver_cadical.git
             GIT_TAG master
             PREFIX solvers
-            CONFIGURE_COMMAND ./configure
-            BUILD_COMMAND make -j
+            CONFIGURE_COMMAND ./configure #-fsanitize=address -g
+            BUILD_COMMAND make -j3
             INSTALL_COMMAND ""
             BUILD_BYPRODUCTS "${CADICAL_LIB}"
             BUILD_IN_SOURCE 1
