@@ -15,25 +15,48 @@
 #include <vector>
 
 
-void echoing_notify_callback(void* state, int32_t const* assigned, int32_t const* unassigned) {
-    printf("notified\n");
-    for (int i = 0; assigned[i]; i++) {
-        printf("Assigned: %d\n", assigned[i]);
-    }
-    for (int i = 0; unassigned[i]; i++) {
-        printf("Unassigned: %d\n", unassigned[i]);
-    }
-}
+class EchoingNotifier {
+    public:
+        std::vector<int32_t> assigns;
 
-std::vector<int32_t> assigned;
-void notify_callback(void* state, int32_t const* assigned, int32_t const* unassigned) {
-    for (int i = 0; assigned[i]; i++) {
-        ::assigned.push_back(assigned[i]);
-    }
-    for (int i = 0; unassigned[i]; i++) {
-        ::assigned.erase(std::remove(::assigned.begin(), ::assigned.end(), unassigned[i]), ::assigned.end());
-    }
-}
+        EchoingNotifier() {}
+
+        static void notify_callback_wrapper(void* context, int32_t const* assigned, int32_t const* unassigned) {
+            static_cast<EchoingNotifier*>(context)->notify_callback(assigned, unassigned);
+        }
+
+    private:
+        void notify_callback(int32_t const* assigned, int32_t const* unassigned) {
+            printf("notified\n");
+            for (int i = 0; assigned[i]; i++) {
+                printf("Assigned: %d\n", assigned[i]);
+            }
+            for (int i = 0; unassigned[i]; i++) {
+                printf("Unassigned: %d\n", unassigned[i]);
+            }          
+        }
+};
+
+class Notifier {
+    public:
+        std::vector<int32_t> assigns;
+
+        Notifier() : assigns() {}
+
+        static void notify_callback_wrapper(void* context, int32_t const* assigned, int32_t const* unassigned) {
+            static_cast<Notifier*>(context)->notify_callback(assigned, unassigned);
+        }
+
+    private:
+        void notify_callback(int32_t const* assigned, int32_t const* unassigned) {
+            for (int i = 0; assigned[i]; i++) {
+                assigns.push_back(assigned[i]);
+            }
+            for (int i = 0; unassigned[i]; i++) {
+                assigns.erase(std::remove(assigns.begin(), assigns.end(), unassigned[i]), assigns.end());
+            }            
+        }
+};
 
 TEST_CASE("Test Notify") {
     ipasir2_errorcode ret;
@@ -43,25 +66,25 @@ TEST_CASE("Test Notify") {
     CHECK(ret == IPASIR2_E_OK);
 
     SUBCASE("Notify Unit and Unit Propagate") {
-        assigned.clear();
+        Notifier notifier;
         int result;
-        ret = ipasir2_set_notify(solver, solver, notify_callback);
+        ret = ipasir2_set_notify(solver, &notifier, Notifier::notify_callback_wrapper);
         CHECK(ret == IPASIR2_E_OK);
         ret = ipasir2_add_formula(solver, {{ 1 }, { 2 }, { -2, 3 }});
         CHECK(ret == IPASIR2_E_OK);
         ret = ipasir2_solve(solver, &result);
         CHECK(ret == IPASIR2_E_OK);
         CHECK(result == RESULT_SAT);
-        CHECK(::assigned.size() == 3);
-        CHECK(std::find(::assigned.begin(), ::assigned.end(), 1) != ::assigned.end());
-        CHECK(std::find(::assigned.begin(), ::assigned.end(), 2) != ::assigned.end());
-        CHECK(std::find(::assigned.begin(), ::assigned.end(), 3) != ::assigned.end());
+        CHECK(notifier.assigns.size() == 3);
+        CHECK(std::find(notifier.assigns.begin(), notifier.assigns.end(), 1) != notifier.assigns.end());
+        CHECK(std::find(notifier.assigns.begin(), notifier.assigns.end(), 2) != notifier.assigns.end());
+        CHECK(std::find(notifier.assigns.begin(), notifier.assigns.end(), 3) != notifier.assigns.end());
     }
 
     SUBCASE("Notify Unit and Unit Propagate under Decision Limit") {
-        assigned.clear();
+        Notifier notifier;
         int result;
-        ret = ipasir2_set_notify(solver, solver, notify_callback);
+        ret = ipasir2_set_notify(solver, &notifier, Notifier::notify_callback_wrapper);
         CHECK(ret == IPASIR2_E_OK);
         ret = ipasir2_set_option(solver, "ipasir.limits.decisions", 0, 0);
         CHECK(ret == IPASIR2_E_OK);
@@ -70,10 +93,10 @@ TEST_CASE("Test Notify") {
         ret = ipasir2_solve(solver, &result);
         CHECK(ret == IPASIR2_E_OK);
         CHECK(result == RESULT_SAT);
-        CHECK(::assigned.size() == 3);
-        CHECK(std::find(::assigned.begin(), ::assigned.end(), 1) != ::assigned.end());
-        CHECK(std::find(::assigned.begin(), ::assigned.end(), 2) != ::assigned.end());
-        CHECK(std::find(::assigned.begin(), ::assigned.end(), 3) != ::assigned.end());
+        CHECK(notifier.assigns.size() == 3);
+        CHECK(std::find(notifier.assigns.begin(), notifier.assigns.end(), 1) != notifier.assigns.end());
+        CHECK(std::find(notifier.assigns.begin(), notifier.assigns.end(), 2) != notifier.assigns.end());
+        CHECK(std::find(notifier.assigns.begin(), notifier.assigns.end(), 3) != notifier.assigns.end());
     }
 
     ret = ipasir2_release(solver);
