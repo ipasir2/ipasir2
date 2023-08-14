@@ -36,6 +36,9 @@ void print_available(std::string function, ipasir2_errorcode err) {
         case IPASIR2_E_UNSUPPORTED:
             std::cout << blue << "[unsupported] " << reset << function << " (IPASIR2_E_UNSUPPORTED)" << std::endl;
             break;
+        case IPASIR2_E_UNSUPPORTED_ARGUMENT:
+            std::cout << blue << "[unsupported] " << reset << function << " (IPASIR2_E_UNSUPPORTED_ARGUMENT)" << std::endl;
+            break;
         default:
             std::cout << red << "[error] " << reset << function << " (" << err << ")" << std::endl;
     }
@@ -118,6 +121,11 @@ void probe_availability_of_callbacks(void* solver) {
 	        return nullptr;
         });
     print_available("ipasir2_set_import(NONE)", err);
+
+    err = ipasir2_set_notify(solver, data, [](void* data, int32_t const* assign, int32_t const* unassign) {
+            std::cout << "assigned a bunch of variables" << std::endl;
+        });
+    print_available("ipasir2_set_notify()", err);
 }
 
 ipasir2_errorcode probe_availability_of_options(void* solver) {
