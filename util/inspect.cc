@@ -30,11 +30,11 @@ void print_options(void* solver) {
 
 void print_available(std::string function, ipasir2_errorcode err) {
     switch (err) {
-        case IPASIR_E_OK:
-            std::cout << green << "[available] " << reset << function << " (IPASIR_E_OK)" << std::endl;
+        case IPASIR2_E_OK:
+            std::cout << green << "[available] " << reset << function << " (IPASIR2_E_OK)" << std::endl;
             break;
-        case IPASIR_E_UNSUPPORTED:
-            std::cout << blue << "[unsupported] " << reset << function << " (IPASIR_E_UNSUPPORTED)" << std::endl;
+        case IPASIR2_E_UNSUPPORTED:
+            std::cout << blue << "[unsupported] " << reset << function << " (IPASIR2_E_UNSUPPORTED)" << std::endl;
             break;
         default:
             std::cout << red << "[error] " << reset << function << " (" << err << ")" << std::endl;
@@ -42,7 +42,7 @@ void print_available(std::string function, ipasir2_errorcode err) {
 }
 
 ipasir2_errorcode probe_availabilty_of_basic_functionality(void* solver) {
-    ipasir2_errorcode err = IPASIR_E_OK;
+    ipasir2_errorcode err = IPASIR2_E_OK;
     int result;
     int32_t value;
 
@@ -80,31 +80,48 @@ ipasir2_errorcode probe_availabilty_of_basic_functionality(void* solver) {
 }
 
 void probe_availability_of_callbacks(void* solver) {
-    ipasir2_errorcode err = IPASIR_E_OK;
+    ipasir2_errorcode err = IPASIR2_E_OK;
     void* data;
 
+    // Test availability of terminate callback
     err = ipasir2_set_terminate(solver, data, [](void* data) {
             return 0;
         });
-
     print_available("ipasir2_set_terminate()", err);
 
-    err = ipasir2_set_learn(solver, data, [](void* data, int32_t const* clause) {
+    // Test availability and available modes of learned clause callback
+    err = ipasir2_set_export(solver, data, 2, [](void* data, int32_t const* clause) {
             std::cout << "learned a clause" << std::endl;
         });
+    print_available("ipasir2_set_export(LENGTH RESTRICTED)", err);
 
-    print_available("ipasir2_set_learn()", err);
-
-    err = ipasir2_set_import_redundant_clause(solver, data, [](void* data) -> int32_t const* {
-            std::cout << "imported a redundant clause" << std::endl;
-	    return nullptr;
+    err = ipasir2_set_export(solver, data, -1, [](void* data, int32_t const* clause) {
+            std::cout << "learned a clause" << std::endl;
         });
+    print_available("ipasir2_set_export(ANY LENGTH)", err);
 
-    print_available("ipasir2_set_import_redundant_clause()", err);
+    // Test availability and available modes of import clause callback
+    err = ipasir2_set_import(solver, data, IPASIR2_P_EQIV, [](void* data) -> int32_t const* {
+            std::cout << "imported a clause" << std::endl;
+	        return nullptr;
+        });
+    print_available("ipasir2_set_import(EQIV)", err);
+
+    err = ipasir2_set_import(solver, data, IPASIR2_P_IMPL, [](void* data) -> int32_t const* {
+            std::cout << "imported a clause" << std::endl;
+	        return nullptr;
+        });
+    print_available("ipasir2_set_import(IMPL)", err);
+
+    err = ipasir2_set_import(solver, data, IPASIR2_P_NONE, [](void* data) -> int32_t const* {
+            std::cout << "imported a clause" << std::endl;
+	        return nullptr;
+        });
+    print_available("ipasir2_set_import(NONE)", err);
 }
 
 ipasir2_errorcode probe_availability_of_options(void* solver) {
-    ipasir2_errorcode err = IPASIR_E_OK;
+    ipasir2_errorcode err = IPASIR2_E_OK;
     ipasir2_option const* option;
 
     err = ipasir2_options(solver, &option);
@@ -113,13 +130,13 @@ ipasir2_errorcode probe_availability_of_options(void* solver) {
     if (err) return err;
 
     if (option->name != nullptr) {
-        err = ipasir2_set_option(solver, option->name, option->min);
+        err = ipasir2_set_option(solver, option->name, 0, option->min);
         print_available("ipasir2_set_option()", err);
         return err;
     }
     else {
         std::cout << blue << "[unavailable] " << reset << "no actual options to set" << std::endl;
-        return IPASIR_E_UNSUPPORTED;
+        return IPASIR2_E_UNSUPPORTED;
     }
 }
 
