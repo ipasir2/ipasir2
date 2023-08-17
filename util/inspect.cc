@@ -114,7 +114,7 @@ void probe_availability_of_callbacks(void* solver) {
             std::cout << "imported a clause" << std::endl;
 	        return nullptr;
         });
-    print_available("ipasir2_set_import(IMPL)", err);
+    print_available("ipasir2_set_import(EQIS)", err);
 
     err = ipasir2_set_import(solver, data, IPASIR2_P_NONE, [](void* data) -> int32_t const* {
             std::cout << "imported a clause" << std::endl;
