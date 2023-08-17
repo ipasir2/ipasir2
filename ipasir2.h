@@ -102,7 +102,7 @@ typedef enum ipasir2_state {
  */
 typedef enum ipasir2_pledge {
     IPASIR2_P_EQIV = 0, // imported clause is equivalence preserving
-    IPASIR2_P_IMPL = 1, // imported clause is satisfiability preserving
+    IPASIR2_P_EQIS = 1, // imported clause is satisfiability preserving
     IPASIR2_P_NONE = 2, // imported clause could be anything
 } ipasir2_pledge;
 
