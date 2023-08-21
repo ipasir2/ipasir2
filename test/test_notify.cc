@@ -65,7 +65,7 @@ TEST_CASE("Test Notify") {
     ret = ipasir2_init(&solver);
     CHECK(ret == IPASIR2_E_OK);
 
-    ipasir2_option* dlim;
+    const ipasir2_option* dlim;
     ret = ipasir2_get_option_handle(solver, "ipasir.limits.decisions", &dlim);
     CHECK(ret == IPASIR2_E_OK);
 
