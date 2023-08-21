@@ -65,6 +65,10 @@ TEST_CASE("Test Notify") {
     ret = ipasir2_init(&solver);
     CHECK(ret == IPASIR2_E_OK);
 
+    ipasir2_option* dlim;
+    ret = ipasir2_get_option_handle(solver, "ipasir.limits.decisions", &dlim);
+    CHECK(ret == IPASIR2_E_OK);
+
     SUBCASE("Notify Unit and Unit Propagate") {
         Notifier notifier;
         int result;
@@ -86,7 +90,7 @@ TEST_CASE("Test Notify") {
         int result;
         ret = ipasir2_set_notify(solver, &notifier, Notifier::notify_callback_wrapper);
         CHECK(ret == IPASIR2_E_OK);
-        ret = ipasir2_set_option(solver, "ipasir.limits.decisions", 0, 0);
+        ret = ipasir2_set_option(solver, dlim, 0, 0);
         CHECK(ret == IPASIR2_E_OK);
         ret = ipasir2_add_formula(solver, {{ 1 }, { 2 }, { -2, 3 }});
         CHECK(ret == IPASIR2_E_OK);

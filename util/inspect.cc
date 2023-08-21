@@ -104,24 +104,27 @@ void probe_availability_of_callbacks(void* solver) {
     print_available("ipasir2_set_export(ANY LENGTH)", err);
 
     // Test availability and available modes of import clause callback
-    err = ipasir2_set_import(solver, data, IPASIR2_P_EQIV, [](void* data) -> int32_t const* {
+    err = ipasir2_set_import(solver, data, IPASIR2_R_NONE, [](void* data, const int32_t** clause, ipasir2_redundancy* red) {
             std::cout << "imported a clause" << std::endl;
-	        return nullptr;
         });
-    print_available("ipasir2_set_import(EQIV)", err);
+    print_available("ipasir2_set_import(IPASIR2_R_NONE)", err);
 
-    err = ipasir2_set_import(solver, data, IPASIR2_P_EQIS, [](void* data) -> int32_t const* {
+    err = ipasir2_set_import(solver, data, IPASIR2_R_FORGETTABLE, [](void* data, const int32_t** clause, ipasir2_redundancy* red) {
             std::cout << "imported a clause" << std::endl;
-	        return nullptr;
         });
-    print_available("ipasir2_set_import(EQIS)", err);
+    print_available("ipasir2_set_import(IPASIR2_R_FORGETTABLE)", err);
 
-    err = ipasir2_set_import(solver, data, IPASIR2_P_NONE, [](void* data) -> int32_t const* {
+    err = ipasir2_set_import(solver, data, IPASIR2_R_EQUISATISFIABLE, [](void* data, const int32_t** clause, ipasir2_redundancy* red) {
             std::cout << "imported a clause" << std::endl;
-	        return nullptr;
         });
-    print_available("ipasir2_set_import(NONE)", err);
+    print_available("ipasir2_set_import(IPASIR2_R_EQUISATISFIABLE)", err);
 
+    err = ipasir2_set_import(solver, data, IPASIR2_R_EQUIVALENT, [](void* data, const int32_t** clause, ipasir2_redundancy* red) {
+            std::cout << "imported a clause" << std::endl;
+        });
+    print_available("ipasir2_set_import(IPASIR2_R_EQUIVALENT)", err);
+
+    // Test availability of notify callback
     err = ipasir2_set_notify(solver, data, [](void* data, int32_t const* assign, int32_t const* unassign) {
             std::cout << "assigned a bunch of variables" << std::endl;
         });
@@ -137,8 +140,8 @@ ipasir2_errorcode probe_availability_of_options(void* solver) {
 
     if (err) return err;
 
-    if (option->name != nullptr) {
-        err = ipasir2_set_option(solver, option->name, 0, option->min);
+    if (option != nullptr) {
+        err = ipasir2_set_option(solver, option, option->min, 0);
         print_available("ipasir2_set_option()", err);
         return err;
     }
