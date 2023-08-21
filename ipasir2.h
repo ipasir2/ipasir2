@@ -8,6 +8,7 @@
 #define INTERFACE_IPASIR2_H_
 
 #include <stdint.h>
+#include <string.h>
 
 /*
  * In this header, the macro IPASIR_API is defined as follows:
@@ -56,86 +57,179 @@ extern "C" {
 
 
 /**
- * @brief IPASIR Error Codes
+ * @enum ipasir2_errorcode
+ * @brief IPASIR-2 error codes
+ * @details The IPASIR-2 error codes are used to indicate the success or failure of a function call.
+ * 
+ * @var ipasir2_errorcode::IPASIR2_E_OK
+ *  @brief Success.
+ *  @details The function call was successful.
+ * 
+ * @var ipasir2_errorcode::IPASIR2_E_UNKNOWN
+ *  @brief Unknown error.
+ *  @details The function call failed for an unknown reason.
+ * 
+ * @var ipasir2_errorcode::IPASIR2_E_UNSUPPORTED
+ *  @brief Unsupported function.
+ *  @details The function is not implemented by the solver.
+ * 
+ * @var ipasir2_errorcode::IPASIR2_E_UNSUPPORTED_ARGUMENT
+ *  @brief Unsupported argument.
+ *  @details The function is not implemented for handling the given argument value.
+ * 
+ * @var ipasir2_errorcode::IPASIR2_E_INVALID_STATE
+ *  @brief Invalid state.
+ *  @details The function call is not allowed in the current state of the solver.
+ * 
+ * @var ipasir2_errorcode::IPASIR2_E_OPTION_UNKNOWN
+ *  @brief Unknown option.
+ *  @details The option is not supported by the solver.
+ * 
+ * @var ipasir2_errorcode::IPASIR2_E_OPTION_INVALID_VALUE
+ *  @brief Invalid option value.
+ *  @details The option value is outside the allowed range.
+ * 
+ * @var ipasir2_errorcode::IPASIR2_E_UNSUPPORTED_PLEDGE_LEVEL
+ *  @brief Unsupported pledge level.
+ *  @details The solver does not support the given pledge level.
+ * 
  */
 typedef enum ipasir2_errorcode {
     IPASIR2_E_OK = 0,
-    IPASIR2_E_UNKNOWN = 1, // to be used if no other code applies
-    IPASIR2_E_UNSUPPORTED, // to be used if a function is not supported by the solver
-    IPASIR2_E_UNSUPPORTED_ARGUMENT, // to be used if a particular function argument value is not supported by the solver
-    IPASIR2_E_INVALID_STATE, // to be used if a function is called in a state which is not allowed by the ipasir state machine
-    IPASIR2_E_OPTION_UNKNOWN, // specific to configuration interface. to be used if an option is not supported by the solver
-    IPASIR2_E_OPTION_INVALID_VALUE // specific to configuration interface. to be used if an option value is not supported by the solver
+    IPASIR2_E_UNKNOWN = 1,
+    IPASIR2_E_UNSUPPORTED,
+    IPASIR2_E_UNSUPPORTED_ARGUMENT,
+    IPASIR2_E_INVALID_STATE,
+    IPASIR2_E_OPTION_UNKNOWN,
+    IPASIR2_E_OPTION_INVALID_VALUE,
+    IPASIR2_E_UNSUPPORTED_PLEDGE_LEVEL
 } ipasir2_errorcode;
 
+
 /**
- * @brief States of the IPASIR state machine
+ * @enum ipasir2_state
+ * @brief States of the IPASIR-2 underlying state machine.
+ * @details The state of the IPASIR-2 solver is defined by the state of the underlying state machine.
+ *     State transitions are triggered by ipasir function calls. 
+ *     The state machine is initialized in the CONFIG state.
+ *     Functions are only allowed to be called in the states specified in this documentation.
+ *     If a function is called in the wrong state, the function returns IPASIR2_E_INVALID_STATE.
  * 
- * States are ordered by the following partial order:
- *  CONFIG < SAT/UNSAT/INPUT < SOLVING
+ *     States are ordered by the following partial order: 
+ *         CONFIG < INPUT = SAT = UNSAT < SOLVING
+ *     
+ *     For example, an IPASIR function which is allowed in states <= INPUT is 
+ *     also allowed in states SAT, UNSAT and CONFIG.
+ *      
  */
 typedef enum ipasir2_state {
     IPASIR2_S_CONFIG = 0,
     IPASIR2_S_INPUT = 1,
-    IPASIR2_S_SAT = 2,
-    IPASIR2_S_UNSAT = 3,
-    IPASIR2_S_SOLVING = 4,
+    IPASIR2_S_SAT,
+    IPASIR2_S_UNSAT,
+    IPASIR2_S_SOLVING,
 } ipasir2_state;
 
+
 /**
- * @brief Pledges for the import clause callback
+ * @enum ipasir2_redundancy
+ * @brief Redundancy type for the import clause callback.
+ * @details The import clause callback is used to import clauses.
+ *     The import callback setter pledges the minimally expected redundancy type. 
+ *     
+ *     Redundancy type pledges are ordered from stronger to weaker as follows: 
+ *          EQUIVALENT > EQUISATISFIABLE > FORGETTABLE > NONE.
  * 
- * The application specifies what kind of clauses are expected to be imported by the solver.
+ * The callback function returns a clause and the redundancy type that applies to that clause.
+ * This redundancy type must be at least as strong as the redundancy type pledged by the callback setter.
+ * For example, if the import callback setter pledges to return clauses of type EQUISATISFIABLE, 
+ * the callback may also return clauses of type EQUIVALENT, but not clauses of type FORGETTABLE or NONE.
  * 
- * Let F be the formula specified by ipasir2_lit() calls and previous import clause calls.
- * Let C be the clause to be imported by the import clause callback.
+ * @var ipasir2_redundancy::IPASIR2_R_NONE
+ *  @brief Irredundant clauses.
+ *  @details The clauses served by the import clause callback are not necessarily redundant 
+ *      and might change the satisfiability of the formula.
+ *      Irredundant clauses might introduce new variables.
  * 
- * IPASIR-2 specifies three kinds of pledges for the import clause callback:
+ * @var ipasir2_redundancy::IPASIR2_R_FORGETTABLE
+ *  @brief Irredundant but forgettable clauses.
+ *  @details The clauses served by the import clause callback are not necessarily redundant
+ *      and might change the satisfiability of the formula. 
+ *      However, the solver is allowed to forget these clauses.
+ *      Forgettable clauses might introduce new variables.
  * 
- * - Equivalence: F |= F, C
- *      This means clauses are expected to be entailed by the formula such that F is equivalent to F and C.
- * - Equisatisfiable: F, C and F are equisatisfiable
- *      In particular, this mode allows to import blocked clauses and blocked sets
- * - None: 
- *      This means the solver must be able to deal with any kind of clause even those changing the satisfiability of the formula.
+ * @var ipasir2_redundancy::IPASIR2_R_EQUISATISFIABLE
+ *  @brief Equisatisfiable clauses.
+ *  @details The clauses served by the import clause callback are satisfiability preserving.
+ *      Satisfiability preserving clauses might introduce new variables.
+ * 
+ * @var ipasir2_redundancy::IPASIR2_R_EQUIVALENT
+ *  @brief Equivalence preserving clauses.
+ *  @details The clauses served by the import clause callback are equivalence preserving.
+ *      Equivalence preserving clauses do not introduce new variables.
  * 
  */
-typedef enum ipasir2_pledge {
-    IPASIR2_P_EQIV = 0, // imported clause is equivalence preserving
-    IPASIR2_P_EQIS = 1, // imported clause is satisfiability preserving
-    IPASIR2_P_NONE = 2, // imported clause could be anything
-} ipasir2_pledge;
+typedef enum ipasir2_redundancy {
+    IPASIR2_R_NONE = 0,
+    IPASIR2_R_FORGETTABLE = 1,
+    IPASIR2_R_EQUISATISFIABLE,
+    IPASIR2_R_EQUIVALENT,
+} ipasir2_redundancy;
 
 
 /**
+ * @struct ipasir2_option
  * @brief IPASIR Configuration Options
+ * @details Solver options are identified by a string name.
  * 
- * Solver options are identified by a string name.
- * Option identifers can be grouped into namespaces which are separated by a dot.
- * The IPASIR-2 specification reserves the namespace "ipasir." for options defined by the IPASIR-2 specification.
- * If a solver provides an option from the "ipasir." namespace, its behavior must be as specified in the IPASIR-2 specification.
  * If a solver does not support a given option, it must return IPASIR2_E_OPTION_UNKNOWN when the option is set.
+ * 
+ * @var ipasir2_option::name
+ *  @brief Unique option identifier.
+ *  @details Option identifers can be grouped into namespaces which are separated by a dot.
+ *      The IPASIR-2 specification reserves the namespace "ipasir." for options defined by the IPASIR-2 specification.
+ *      If a solver provides an option from the "ipasir." namespace, its behavior must be as specified in the IPASIR-2 specification.
+ * 
+ * @var ipasir2_option::min
+ *  @brief Minimum value.
+ *  @details Minimum allowed value for the option.
+ *      The solver must return IPASIR2_E_OPTION_INVALID_VALUE if the option is set to a value outside the range [min, max].
+ * 
+ * @var ipasir2_option::max
+ *  @brief Maximum value.
+ *  @details Maximum allowed value for the option.
+ *      The solver must return IPASIR2_E_OPTION_INVALID_VALUE if the option is set to a value outside the range [min, max].
+ * 
+ * @var ipasir2_option::max_state
+ *  @brief Maximal state.
+ *  @details Maximal state in which the option is allowed to be set. 
+ *      The solver must return IPASIR2_E_INVALID_STATE if the option is set in a state greater than max_state.
+ * 
+ * @var ipasir2_option::tunable
+ *  @brief Tunable option.
+ *  @details Specifies if the option is eligible for tuning.
+ *      If the option is not tunable, automatic tuners should not attempt to set the option.
+ * 
+ * @var ipasir2_option::indexed
+ *  @brief Indexed option.
+ *  @details Specifies if the option uses a variable index.
+ *      Some options can be set individually per variable, e.g., the polarity of a variable.
+ *      If the option is indexed, the index parameter of ipasir2_set_option() specifies the variable index.
+ *      If the option is not indexed, the index parameter of ipasir2_set_option() is ignored.
+ * 
+ * @var ipasir2_option::handle
+ *  @brief Option handle.
+ *  @details The handle is an opaque pointer for solver internal use in the setter function.
  * 
  */
 typedef struct ipasir2_option {
-    /// @brief identifier of the option
     char const* name;
-
-    /// @brief minimum value
     int64_t min;
-
-    /// @brief maximum value
     int64_t max;
-
-    /// @brief maximum of states in which the option is allowed to be set
     ipasir2_state max_state;
-
-    /// @brief specifies if the option is eligible for tuning
     bool tunable;
-
-    /// @brief specifies if the option uses a variable index
     bool indexed;
-
+    void const* handle;
 } ipasir2_option;
 
 
@@ -191,24 +285,46 @@ IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
 IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const** result);
 
 
+/**
+ * @brief Return the handle to the option with the given name.
+ * 
+ * @param solver 
+ * @param name 
+ * @param handle output parameter
+ * @return ipasir2_errorcode
+ *  - IPASIR2_E_OPTION_UNKNOWN if the option is not supported by the solver
+ *  - IPASIR2_E_OK otherwise
+ */
+IPASIR_API ipasir2_errorcode ipasir2_get_option_handle(void* solver, char const* name, ipasir2_option const** handle) {
+    ipasir2_option const* options;
+    ipasir2_options(solver, &options);
+    for (; options != nullptr; options++) {
+        if (strcmp(options->name, name) == 0) {
+            *handle = options;
+            return IPASIR2_E_OK;
+        }
+    }
+    return IPASIR2_E_OPTION_UNKNOWN;
+}
+
+
 /** 
- * @brief Set given IPASIR Configuration Option
+ * @brief Set value of option identified by the given handle.
  * 
  * @param solver SAT solver
- * @param name Option name
+ * @param handle Option handle
  * @param index Option index, if the option is not indexed, this parameter is ignored
  * otherwise, it specifies a variable index, use zero if the value should be applied to all variables
  * @param value Option value
  * @return ipasir2_errorcode:
- *  - IPASIR2_E_OPTION_UNKNOWN if the option is not supported by the solver
- *  - IPASIR2_E_INVALID_CONFIG if the option value is invalid
+ *  - IPASIR2_E_OPTION_INVALID_VALUE if the option value is outside the allowed range
  *  - IPASIR2_E_INVALID_STATE if the option is not allowed to be set in the current state
  *  - IPASIR2_E_OK otherwise
  * 
- * Required state: <=ipasir2_options[name].max_state
+ * Required state: <= handle->max_state
  * State after: same as before
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, char const* name, int64_t index, int64_t value);
+IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, ipasir2_option const* handle, int64_t value, int64_t index);
 
 
 /**
@@ -328,8 +444,8 @@ IPASIR_API ipasir2_errorcode ipasir2_failed(void* solver, int32_t lit, int* resu
  * @param callback 
  * @return ipasir2_errorcode
  *
- * Required state: <=INPUT
- * State after: <=INPUT
+ * Required state: <= INPUT
+ * State after: <= INPUT
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data, 
     int (*callback)(void* data));
@@ -366,8 +482,8 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data,
  * @param learn 
  * @return ipasir2_errorcode
  * 
- * Required state: <=INPUT
- * State after: <=INPUT
+ * Required state: <= INPUT
+ * State after: <= INPUT
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_export(void* solver, void* data, int max_length, 
     void (*callback)(void* data, int32_t const* clause));
@@ -406,8 +522,8 @@ IPASIR_API ipasir2_errorcode ipasir2_set_export(void* solver, void* data, int ma
  * Required state: <= SOLVING
  * State after: <= SOLVING
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_import(void* solver, void* data, ipasir2_pledge pledge, 
-    int32_t const* (*callback)(void* data));
+IPASIR_API ipasir2_errorcode ipasir2_set_import(void* solver, void* data, ipasir2_redundancy pledge, 
+    void (*callback)(void* data, int32_t const** clause, ipasir2_redundancy* type));
 
 
 /**

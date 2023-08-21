@@ -58,6 +58,8 @@ std::string ipasir2_errorcode_to_string(ipasir2_errorcode err) {
             return "IPASIR_E_OPTION_UNKNOWN";
         case IPASIR2_E_OPTION_INVALID_VALUE:
             return "IPASIR_E_OPTION_INVALID_VALUE";
+        case IPASIR2_E_UNSUPPORTED_PLEDGE_LEVEL:
+            return "IPASIR2_E_UNSUPPORTED_PLEDGE_LEVEL";
         default:
             return "UNKNOWN ERROR CODE";
     }
