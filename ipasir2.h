@@ -295,7 +295,7 @@ IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const*
  *  - IPASIR2_E_OPTION_UNKNOWN if the option is not supported by the solver
  *  - IPASIR2_E_OK otherwise
  */
-IPASIR_API ipasir2_errorcode ipasir2_get_option_handle(void* solver, char const* name, ipasir2_option const** handle) {
+IPASIR_API inline ipasir2_errorcode ipasir2_get_option_handle(void* solver, char const* name, ipasir2_option const** handle) {
     ipasir2_option const* options;
     ipasir2_options(solver, &options);
     for (; options != nullptr; options++) {
