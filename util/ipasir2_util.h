@@ -46,20 +46,20 @@ std::string ipasir2_errorcode_to_string(ipasir2_errorcode err) {
     switch (err) {
         case IPASIR2_E_OK:
             return "IPASIR_E_OK";
+        case IPASIR2_E_UNKNOWN:
+            return "IPASIR_E_UNKNOWN";
         case IPASIR2_E_UNSUPPORTED:
             return "IPASIR_E_UNSUPPORTED";
         case IPASIR2_E_UNSUPPORTED_ARGUMENT:
             return "IPASIR_E_UNSUPPORTED_ARGUMENT";
-        case IPASIR2_E_UNKNOWN:
-            return "IPASIR_E_UNKNOWN";
+        case IPASIR2_E_UNSUPPORTED_OPTION:
+            return "IPASIR2_E_UNSUPPORTED_OPTION";
+        case IPASIR2_E_UNSUPPORTED_REDUNDANCY_TYPE:
+            return "IPASIR2_E_UNSUPPORTED_REDUNDANCY_TYPE";
         case IPASIR2_E_INVALID_STATE:
             return "IPASIR_E_INVALID_STATE";
-        case IPASIR2_E_OPTION_UNKNOWN:
-            return "IPASIR_E_OPTION_UNKNOWN";
-        case IPASIR2_E_OPTION_INVALID_VALUE:
+        case IPASIR2_E_INVALID_OPTION_VALUE:
             return "IPASIR_E_OPTION_INVALID_VALUE";
-        case IPASIR2_E_UNSUPPORTED_PLEDGE_LEVEL:
-            return "IPASIR2_E_UNSUPPORTED_PLEDGE_LEVEL";
         default:
             return "UNKNOWN ERROR CODE";
     }
