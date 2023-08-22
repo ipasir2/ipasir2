@@ -81,13 +81,13 @@ extern "C" {
  *  @brief Unknown option.
  *  @details The option is not supported by the solver.
  * 
- * @var ipasir2_errorcode::IPASIR2_E_UNSUPPORTED_REDUNDANCY_TYPE
- *  @brief Unsupported pledge level.
- *  @details The solver does not support the given pledge level.
- * 
  * @var ipasir2_errorcode::IPASIR2_E_INVALID_STATE
  *  @brief Invalid state.
  *  @details The function call is not allowed in the current state of the solver.
+ * 
+ * @var ipasir2_errorcode::IPASIR2_E_INVALID_ARGUMENT
+ *  @brief Invalid argument.
+ *  @details The function call failed because of an invalid argument.
  * 
  * @var ipasir2_errorcode::IPASIR2_E_INVALID_OPTION_VALUE
  *  @brief Invalid option value.
@@ -100,8 +100,8 @@ typedef enum ipasir2_errorcode {
     IPASIR2_E_UNSUPPORTED,
     IPASIR2_E_UNSUPPORTED_ARGUMENT,
     IPASIR2_E_UNSUPPORTED_OPTION,
-    IPASIR2_E_UNSUPPORTED_REDUNDANCY_TYPE,
     IPASIR2_E_INVALID_STATE,
+    IPASIR2_E_INVALID_ARGUMENT,
     IPASIR2_E_INVALID_OPTION_VALUE
 } ipasir2_errorcode;
 
@@ -182,13 +182,12 @@ typedef enum ipasir2_redundancy {
  * @brief IPASIR Configuration Options
  * @details Solver options are identified by a string name.
  * 
- * If a solver does not support a given option, it must return IPASIR2_E_UNSUPPORTED_OPTION when the option is set.
- * 
  * @var ipasir2_option::name
  *  @brief Unique option identifier.
  *  @details Option identifers can be grouped into namespaces which are separated by a dot.
  *      The IPASIR-2 specification reserves the namespace "ipasir." for options defined by the IPASIR-2 specification.
  *      If a solver provides an option from the "ipasir." namespace, its behavior must be as specified in the IPASIR-2 specification.
+ *      If a solver does not support a given option, it returns IPASIR2_E_UNSUPPORTED_OPTION when the option is set.
  * 
  * @var ipasir2_option::min
  *  @brief Minimum value.
@@ -421,7 +420,7 @@ IPASIR_API ipasir2_errorcode ipasir2_solve(void* solver, int* result);
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  *         IPASIR2_E_INVALID_STATE if the solver is not in the SAT state.
- *         IPASIR2_E_UNSUPPORTED_ARGUMENT if the literal is not valid.
+ *         IPASIR2_E_INVALID_ARGUMENT if the literal is not valid.
  *
  * Required state: SAT
  * State after: SAT
@@ -446,7 +445,7 @@ IPASIR_API ipasir2_errorcode ipasir2_val(void* solver, int32_t lit, int32_t* res
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  *         IPASIR2_E_INVALID_STATE if the solver is not in the UNSAT state.
- *         IPASIR2_E_UNSUPPORTED_ARGUMENT if the literal is not a valid assumption literal from the last call.
+ *         IPASIR2_E_INVALID_ARGUMENT if the literal is not a valid assumption literal from the last call.
  * 
  * Required state: UNSAT
  * State after: UNSAT
@@ -528,7 +527,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_export(void* solver, void* data, int ma
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  *         IPASIR2_E_UNSUPPORTED if the solver does not support clause import callbacks.
- *         IPASIR2_E_UNSUPPORTED_REDUNDANCY_TYPE if the solver does not support importing clauses 
+ *         IPASIR2_E_UNSUPPORTED_ARGUMENT if the solver does not support importing clauses 
  *              of redundancy type as low as the given \p pledge.
  *
  * Required state: <= SOLVING
