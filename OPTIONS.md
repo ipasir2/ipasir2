@@ -14,6 +14,8 @@ typedef struct ipasir2_option {
     ipasir2_state max_state;
     bool tunable;
     bool indexed;
+
+    void* handle;
 } ipasir2_option;
 ```
 
