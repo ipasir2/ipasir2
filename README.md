@@ -3,7 +3,7 @@
 The idea of creating an improved successor to the IPASIR interface and reviving the incremental library track of the SAT competition is now two years old. The initial impetus came in late 2022, when I began systematically collecting, grouping, and evaluating requests for improvements to IPASIR which have been floating around in the IPASIR Issue Tracker on GitHub, in my Mailbox, and in discussions with users and developers of SAT solvers. 
 Not all of these ideas made it into the final draft of IPASIR-2, but here is a list of all the requests that were considered:
 
-  - ~~non-incremental solving (with final states SAT-UNSAFE, UNSAT-UNSAFE).~~
+  - [x] non-incremental solving mode
   - [x] more control over pre- and in-processing to reduce overhead when solving simple problems
   - [x] ability to set the random seed
   - [x] ability to declare which variables are activation literals

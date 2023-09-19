@@ -75,6 +75,17 @@ In some applications it is forseable which variables can occur in assumptions or
 >
 
 
+ ## Non-incremental solving mode
+
+This is referring to a issue posting at the IPASIR repository suggesting to introduce a one-shot solving mode. 
+In one-shot solving the solver can throw any pre- and inprocessing technique at the instance, regardless of whether the solver is usable after solving or not. 
+If the option is active during solve, the result of solve can be used, but all further calls to solve return an error code.
+
+> `ipasir.yolo = n`
+> - `n=1` non-incremental mode
+> - `n=0` default incremental mode
+
+
  ## Preprocessing and Inprocessing options
  To cover enabling/disabling preprocessing:
  - ipasir.preprocessing: 
