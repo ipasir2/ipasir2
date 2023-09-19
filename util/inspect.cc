@@ -1,3 +1,10 @@
+/**
+ * MIT License
+ * 
+ * Author: Markus Iser
+ * 
+ */
+
 #include <stdio.h>
 #include <iostream>
 

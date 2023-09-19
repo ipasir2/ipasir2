@@ -241,6 +241,7 @@ typedef struct ipasir2_option {
  */
 IPASIR_API ipasir2_errorcode ipasir2_signature(char const** signature);
 
+
 /**
  * @brief Construct a new solver instance and set result to return a pointer to it.
  * @details Use the returned pointer as the first parameter in each of the following functions.
@@ -253,6 +254,7 @@ IPASIR_API ipasir2_errorcode ipasir2_signature(char const** signature);
  * State after: CONFIG
  */
 IPASIR_API ipasir2_errorcode ipasir2_init(void** solver);
+
 
 /**
  * @brief Release the given solver (destructor). 
@@ -268,6 +270,7 @@ IPASIR_API ipasir2_errorcode ipasir2_init(void** solver);
  * State after: undefined
  */
 IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
+
 
 /** 
  * @brief Return the configuration options which are supported by the solver.
