@@ -1,7 +1,8 @@
 /**
- * Some tests for the ipasir2 interface.
+ * MIT License
  * 
- * @author Markus Iser 
+ * Author: Markus Iser
+ * 
  */
 
 #include <stdio.h>

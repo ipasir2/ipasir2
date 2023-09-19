@@ -1,7 +1,8 @@
 /**
- * Some tests for the ipasir2 interface.
+ * MIT License
  * 
- * @author Markus Iser 
+ * Author: Markus Iser
+ * 
  */
 
 #include <stdio.h>
@@ -69,7 +70,7 @@ TEST_CASE("Test Notify") {
     ret = ipasir2_get_option_handle(solver, "ipasir.limits.decisions", &dlim);
     CHECK(ret == IPASIR2_E_OK);
 
-    SUBCASE("Notify Unit and Unit Propagate") {
+    SUBCASE("Notify units") {
         Notifier notifier;
         int result;
         ret = ipasir2_set_notify(solver, &notifier, Notifier::notify_callback_wrapper);
@@ -85,7 +86,7 @@ TEST_CASE("Test Notify") {
         CHECK(std::find(notifier.assigns.begin(), notifier.assigns.end(), 3) != notifier.assigns.end());
     }
 
-    SUBCASE("Notify Unit and Unit Propagate under Decision Limit") {
+    SUBCASE("Notify units under decision limit") {
         Notifier notifier;
         int result;
         ret = ipasir2_set_notify(solver, &notifier, Notifier::notify_callback_wrapper);
@@ -101,6 +102,42 @@ TEST_CASE("Test Notify") {
         CHECK(std::find(notifier.assigns.begin(), notifier.assigns.end(), 1) != notifier.assigns.end());
         CHECK(std::find(notifier.assigns.begin(), notifier.assigns.end(), 2) != notifier.assigns.end());
         CHECK(std::find(notifier.assigns.begin(), notifier.assigns.end(), 3) != notifier.assigns.end());
+    }
+
+    SUBCASE("Do not notify pure literals under decision limit") {
+        Notifier notifier;
+        int result;
+        ret = ipasir2_set_notify(solver, &notifier, Notifier::notify_callback_wrapper);
+        CHECK(ret == IPASIR2_E_OK);
+        ret = ipasir2_set_option(solver, dlim, 0, 0);
+        CHECK(ret == IPASIR2_E_OK);
+        ret = ipasir2_add_formula(solver, {{ 1, 2 }, { 3, 4 }});
+        CHECK(ret == IPASIR2_E_OK);
+        ret = ipasir2_solve(solver, &result);
+        CHECK(ret == IPASIR2_E_OK);
+        CHECK(result == RESULT_SAT);
+        CHECK(notifier.assigns.size() == 0);
+    }
+
+    SUBCASE("Do not notify pure literals under decision limit in second call") {
+        Notifier notifier;
+        int result;
+        ret = ipasir2_set_notify(solver, &notifier, Notifier::notify_callback_wrapper);
+        CHECK(ret == IPASIR2_E_OK);
+        ret = ipasir2_set_option(solver, dlim, 0, 0);
+        CHECK(ret == IPASIR2_E_OK);
+        ret = ipasir2_add_formula(solver, {{ 1, 2 }, { 3, 4 }});
+        CHECK(ret == IPASIR2_E_OK);
+        ret = ipasir2_solve(solver, &result);
+        CHECK(ret == IPASIR2_E_OK);
+        CHECK(result == RESULT_SAT);
+        CHECK(notifier.assigns.size() == 0);
+        ret = ipasir2_add_formula(solver, {{ -1, -2 }, { -3, -4 }});
+        CHECK(ret == IPASIR2_E_OK);
+        ret = ipasir2_solve(solver, &result);
+        CHECK(ret == IPASIR2_E_OK);
+        CHECK(result == RESULT_SAT);
+        CHECK(notifier.assigns.size() == 0);
     }
 
     ret = ipasir2_release(solver);
