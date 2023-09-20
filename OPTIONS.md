@@ -82,7 +82,7 @@ In some applications it is forseable which variables can occur in assumptions or
 This option introduces a one-shot solving mode, as by the following RFC:
 - https://github.com/biotomas/ipasir/pull/5
 
-In one-shot solving the solver can throw any pre- and inprocessing technique at the instance, regardless of whether the solver is usable after solving or not. 
+In one-shot solving the solver can throw any pre- and inprocessing technique at the instance, regardless of whether the solver is still usable after solving or not. 
 If the option is activated, only _one more_ call to ipasir2_solve() is possible. All further calls to solve return an error code.
 
 > `ipasir.yolo = n`
