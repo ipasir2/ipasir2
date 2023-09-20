@@ -389,7 +389,7 @@ IPASIR_API ipasir2_errorcode ipasir2_assume(void* solver, int32_t lit);
  *          If the formula is unsatisfiable, the output parameter \p result is set to 20 and the state of the solver is changed to UNSAT.
  *          If the search is interrupted, the output parameter \p result is set to 0 and the state of the solver is changed to INPUT.
  *          The state of the solver during execution of ipasir2_solve() is SOLVING.
- *          If the solver calls any of the callback functionsweduring execution of ipasir2_solve(), the state of the solver is SOLVING as well.
+ *          If the solver calls any of the callback functions during execution of ipasir2_solve(), the state of the solver is SOLVING as well.
  *          Callbacks are allowed to call any ipasir2 function which is allowed in the SOLVING state.
  * 
  * @param solver The solver instance.
@@ -507,26 +507,27 @@ IPASIR_API ipasir2_errorcode ipasir2_set_export(void* solver, void* data, int ma
 /**
  * @brief Sets a callback for asynchronously sending clauses to the solver. 
  * @details The solver calls this function periodically while being in SOLVING state.
- *          The callback function sets its output parameter \p clause to the next clause to be imported, 
- *          which is given as a pointer to a zero terminated integer array.
- *          The callback function sets \p clause to nullptr if there is no further clause to import. 
- *          The pointer to the clause must be valid until the next call to the callback function 
- *          or until ipasir2_solve() terminates, whichever happens first.
- *          The application has the responsibility to appropriately buffer the clauses
- *          until the solver decides to import (some of) them via the callback.
  *          Subsequent calls to ipasir2_set_import() override the previously set callback function.
  *          Setting the callback function to nullptr disables the callback.
- *          Applications give a pledge about the relationship of the imported clauses to the original formula.
- *          The pledge is given as the parameter \p pledge.
- *          The callback function sets its output parameter \p type to the redundancy type of the clause.
- *          The redundancy type of the imported clause must be at least as strong as 
- *          the pledge given in the setter, i.e., \p type >= \p pledge.
  *          \p callback is called with the same value for parameter \p data as the one passed to ipasir2_set_import().
+ * 
+ *          The application has the responsibility to appropriately buffer the clauses
+ *          until the solver decides to import (some of) them via the callback.
+ *          The callback function sets its output parameter \p clause to the next clause to be imported, 
+ *          which is given as a pointer to a zero terminated integer array, 
+ *          or to nullptr if there is no further clause to import. 
+ *          The pointer to the \p clause must be valid until the next call to the callback function 
+ *          or until ipasir2_solve() terminates, whichever happens first.
+ * 
+ *          Applications give a \p pledge about the minimum redundancy type of the imported clauses.
+ *          Solvers can reject too weak redundancy types by returning IPASIR2_E_UNSUPPORTED_ARGUMENT.
+ *          The redundancy type of any imported clause must be at least as strong pledged.
+ *          The callback function sets \p type to the actual redundancy type of the clause.
  *          
  * @param solver The solver instance.
  * @param data Opaque pointer passed to the callback function as the first parameter.
  * @param pledge Guarantee on the minimum redundancy type of the clauses to be imported.
- * @param callback The clause import callback function of the form "void callback(void* data, int32_t const** clause, ipasir2_redundancy* type)".
+ * @param callback The clause import callback function of the form "void callback(void* data, ipasir2_redundancy min, int32_t const** clause, ipasir2_redundancy* type)".
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  *         IPASIR2_E_UNSUPPORTED if the solver does not support clause import callbacks.
