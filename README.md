@@ -16,20 +16,22 @@ Not all of these ideas made it into the final draft of IPASIR-2, but here is a l
   - ~~ipasir version constant~~
   - [x] ability to import redundant clauses in parallel clause sharing frameworks
   - [x] ability to limit the number of decisions or conflicts
-  - [x] ability to access the current partial assignment
+  - [x] ability to notfied about the current partial assignment
   - [x] figuring out what literals could be propagated at level zero
   - [x] coordination with IPASIR-UP authors and partial support of IPASIR-UP extension
+  - ~~in INPUT state, ability to quickly check if a set of literals is a model of the formula~~
+  - ~~in SAT state, ability to quickly check if a given literal can be flipped in the model~~
   
-We are very pleased to present a draft that fulfills most of the above wishes. We have created this GitHub area to share this preview of IPASIR-2 with a wider audience. In this discussion area, you can post comments if you miss a particular feature in the current version or want to learn more about the background of a particular design decision. We also have separate discussion areas for each of the new features in IPASIR-2. 
+We are very pleased to present a draft that fulfills most of the above wishes and have created this GitHub area to share this preview of IPASIR-2 with a wider audience. In this discussion area, you can post comments if you miss a particular feature in the current version or want to learn more about the background of a particular design decision. Note that there exists a discussion areas for the new features in IPASIR-2. 
 
 
 ## Error Codes
 
-To improve the quality and stability of applications using IPASIR solvers in the backend, we have introduced error codes. All functions now return an error code and the actual data is returned via output parameters. With the error codes, we introduce a programmatic way for solvers to inform applications about things that went wrong when calling an IPASIR function. Two of the most well-known use cases are covered by IPASIR2_E_UNSUPPORTED and IPASIR2_E_INVALID_STATE, to give examples. 
+To improve the quality and stability of applications using IPASIR solvers in the backend, IPASIR-2 introduced error codes. All functions now return an error code and the actual data is returned via output parameters. With the error codes, IPASIR-2 introduces a programmatic way for solvers to inform applications about things that went wrong when calling an IPASIR function. Two of the most well-known use cases are covered by IPASIR2_E_UNSUPPORTED and IPASIR2_E_INVALID_STATE, to give examples. 
 
 Solver authors who wish to implement only the core set of IPASIR functions, or who find it too complicated to implement some of the extended IPASIR functions, can now use a stub implementation that returns IPASIR2_E_UNSUPPORTED to elegantly notify applications of the lack of an implementation. Another common use case is covered by IPASIR2_E_INVALID_STATE, which is returned whenever a function is not applicable in the current state of the IPASIR state machine, for example when trying to access a model in UNSAT state.
 
-The introdution of error codes seems important enought that after long discussions we were ready to give up backwards compatibility. This means the header name changed to ipasir2.h, the function names are now prefixed with ipasir2_, and we provide wrappers for both ipasir1 applications ans ipasir1 solvers.
+The introdution of error codes seems to give up backwards compatibility. This means the header name changed to ipasir2.h, the function names are now prefixed with ipasir2_, and wrappers are provided for both ipasir1 applications ans ipasir1 solvers.
 
 
 ## Configuration Interface
@@ -46,7 +48,7 @@ Example use cases:
  - Return list of tunable heuristic parameters with min/max info for automatic tuners
  - Allow to set some options from an IPASIR callback, i.e., in SOLVING state
 
-We started a use case driven documentation of a limited set of options in [OPTIONS.md](OPTIONS.md). 
+A use case driven documentation of options can be found in [OPTIONS.md](OPTIONS.md). 
 
 
 ## Clause Import 
