@@ -389,7 +389,7 @@ IPASIR_API ipasir2_errorcode ipasir2_assume(void* solver, int32_t lit);
  *          If the formula is unsatisfiable, the output parameter \p result is set to 20 and the state of the solver is changed to UNSAT.
  *          If the search is interrupted, the output parameter \p result is set to 0 and the state of the solver is changed to INPUT.
  *          The state of the solver during execution of ipasir2_solve() is SOLVING.
- *          If the solver calls any of the callback functions during execution of ipasir2_solve(), the state of the solver is SOLVING as well.
+ *          If the solver calls any of the callback functionsweduring execution of ipasir2_solve(), the state of the solver is SOLVING as well.
  *          Callbacks are allowed to call any ipasir2 function which is allowed in the SOLVING state.
  * 
  * @param solver The solver instance.
@@ -564,7 +564,6 @@ IPASIR_API ipasir2_errorcode ipasir2_set_import(void* solver, void* data, ipasir
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_notify(void* solver, void* data, 
     void (*callback)(void* data, int32_t const* assigned, int32_t const* unassigned));
-
 
 #ifdef __cplusplus
 }  // closing extern "C"
