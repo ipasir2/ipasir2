@@ -66,7 +66,7 @@ Use cases for setting initial branching order includes the setting of applicatio
 
 ### Frozen variables
 
-Many pre- and in-processing SAT solvers use elimination techinques such as bounded variable elimination (BVE) to simplify an instance. If an instance is satisfieable, eliminated variables have to be restored after search in order to determine a correct model. In incremental SAT solving, eliminated variables also have to be restored when they are used in assumptions or when they appear in imported clauses.
+Many pre- and in-processing SAT solvers use elimination techinques such as bounded variable elimination (BVE) to simplify an instance. If an instance is satisfiable, eliminated variables have to be restored after search in order to determine a correct model. In incremental SAT solving, eliminated variables also have to be restored when they are used in assumptions or when they appear in imported clauses.
 
 In some applications it is forseable which variables can occur in assumptions or imported clauses and which can not. As a performance optimization, such applications can set variables to a frozen state to entirely prevent the solver from eliminating them, thus preventing forseable on-demand restoring of clauses from the elimination stack. Moreover, if it is clear that a variable will never be used as an assumption (again), such applications can disable the frozen state for that variable.
 
