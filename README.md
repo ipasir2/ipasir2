@@ -31,7 +31,7 @@ To improve the quality and stability of applications using IPASIR solvers in the
 
 Solver authors who wish to implement only the core set of IPASIR functions, or who find it too complicated to implement some of the extended IPASIR functions, can now use a stub implementation that returns IPASIR2_E_UNSUPPORTED to elegantly notify applications of the lack of an implementation. Another common use case is covered by IPASIR2_E_INVALID_STATE, which is returned whenever a function is not applicable in the current state of the IPASIR state machine, for example when trying to access a model in UNSAT state.
 
-The introdution of error codes seems to give up backwards compatibility. This means the header name changed to ipasir2.h, the function names are now prefixed with ipasir2_, and wrappers are provided for both ipasir1 applications ans ipasir1 solvers.
+With the introdution of error codes IPASIR-2 gives up backwards compatibility. This means the header name changed to ipasir2.h, the function names are now prefixed with ipasir2_, and wrappers are provided for both ipasir1 applications ans ipasir1 solvers.
 
 
 ## Configuration Interface
