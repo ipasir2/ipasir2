@@ -57,9 +57,9 @@ There are several applications where SAT solvers need to be able to import claus
 
 Depending on the use case, different redundancy notions might hold. In parallel clause sharing frameworks, learned clauses might preserve equivalence or, for example in case of extended resolution, at least preserve satisfiability. That does not necessarily hold for applications which lazily encode constraints, e.g., from a background theory. Most solvers should be able to import model-preserving redundant clauses but might not easily be enabled to import the latter.
 
-To facilitate support for different use cases, there is a parameter over which a pledge can be set about what kind of importing clauses the solver must expect. These include equivalence and satisfiability preserving pledges, the latter allowing the import of blocked clauses and blocked sets, and the emergence of new variables, in particular. Applications that use the callback to add non-redundant clauses (e.g. lazy encodings) can do so by setting pledges to none. Solvers can reject pledge levels that are too weak by signalling IPASIR2_E_UNSUPPORTED_ARGUMENT.
+To facilitate support for different use cases, there is a parameter over which a pledge can be set about what kind of importing clauses the solver must expect. These include equivalence and satisfiability preserving pledges, the latter allowing the import of blocked clauses and blocked sets, and the emergence of new variables, in particular. Applications that use the callback to add irredundant clauses (e.g. lazy encodings) can do so by setting pledges to none. Solvers can reject pledge levels that are too weak by signalling IPASIR2_E_UNSUPPORTED_ARGUMENT.
 
-Imported non-redundant clauses must be treated as original problem clauses and must not be forgotten. Note that in the case of IPASIR-UP, clauses resulting from lazy encodings can be safely imported as redundant due to the tight integration of user propagators.
+Imported irredundant clauses must be treated as original problem clauses and must not be forgotten. Note that in the case of IPASIR-UP, clauses resulting from lazy encodings can be safely imported as redundant due to the tight integration of user propagators.
 
 
 ## Assignment Notification

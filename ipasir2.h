@@ -151,6 +151,10 @@ typedef enum ipasir2_state {
  *      and might change the satisfiability of the formula.
  *      Irredundant clauses might introduce new variables.
  * 
+ *      Pragmatics: In presence of an external theory solver, 
+ *                  clauses which are hard to derive again are marked as irredundent, 
+ *                  such that the solver must keep them.
+ * 
  * @var ipasir2_redundancy::IPASIR2_R_FORGETTABLE
  *  @brief Irredundant but forgettable clauses.
  *  @details The clauses served by the import clause callback are not necessarily redundant
@@ -158,15 +162,26 @@ typedef enum ipasir2_state {
  *      However, the solver is allowed to forget these clauses.
  *      Forgettable clauses might introduce new variables.
  * 
+ *      Pragmatics: In presence of an external theory solver,
+ *                  clauses which are easy to derive again are marked as forgettable,
+ *                  and will be added again if needed.
+ * 
  * @var ipasir2_redundancy::IPASIR2_R_EQUISATISFIABLE
  *  @brief Equisatisfiable clauses.
  *  @details The clauses served by the import clause callback are satisfiability preserving.
  *      Satisfiability preserving clauses might introduce new variables.
  * 
+ *      Pragmatics: In clause sharing parallel portfolios, derived clauses are not 
+ *                  allowed to change the satisfiability of the formula, 
+ *                  but might change the number of models 
+ *                  (depending the on implemented proof systems).
+ * 
  * @var ipasir2_redundancy::IPASIR2_R_EQUIVALENT
  *  @brief Equivalence preserving clauses.
  *  @details The clauses served by the import clause callback are equivalence preserving.
  *      Equivalence preserving clauses do not introduce new variables.
+ * 
+ *      Pragmatics: Only clauses that preserve the models of the formula are allowed.
  * 
  */
 typedef enum ipasir2_redundancy {
