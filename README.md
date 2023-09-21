@@ -42,7 +42,7 @@ Example use cases:
 
  - Controlling overhead in solving simple problems by disabling/enabling certain pre- and in-processing algorithms.
  - Search diversification for parallel portfolios
- - Setting hints about which variables are activation literals / could be use as assumptions and which not
+ - Setting hints about which variables are activation literals / will be assumptions and which will not
  - Freeze variables to prevent a solver from eliminating them
  - Setting the polarity of initial variables, for example to activate zero-first branching, random initialization of phases, or individual setting of phases
  - Return list of tunable heuristic parameters with min/max info for automatic tuners
