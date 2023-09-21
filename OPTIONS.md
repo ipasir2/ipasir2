@@ -29,10 +29,9 @@ Some options can be set per variable or other types of indices. For this use cas
 
 ## Setting of limits
 These options are usually not eligible for tuning. 
-Use cases include for example: 
+Use cases for setting deterministic solve limits include for example: 
 - "Local Search with a SAT Oracle for Combinatorial Optimization" by Aviad Cohen, Alexander Nadel and Vadim Ryvchin (TACAS 2021)
 - determination of implied facts by setting decision level to zero and listening to assignments with an ipasir2 notify callback
-- setting of a deterministic runtime limit
 
 > `ipasir.limits.conflicts = n`
 >  - `n = -1` no conflict limit
