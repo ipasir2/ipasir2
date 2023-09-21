@@ -24,7 +24,7 @@ Options are set as **int64_t values** to simplify the *option setter* and the sp
 IPASIR-2 introduces the new state **CONFIG** which precedes input and can never be reached again during the lifetime of a solver. Moreover, IPASIR-2 specifies a partial order for its states: **CONFIG < INPUT = SAT = UNSAT < SOLVING**. This allows solver authors to specify the maximal state in which they can allow an option to be set. There might be options which have to be set before the solver object is created. In such a case the option would be marked with **max_state=CONFIG**. Options which can be reset between **solve()** calls would be marked with **max_state=INPUT**. And finally, for options which can be set from inside of one of the registered callback functions (use-case: IPASIR-UP) **max_state** would be **SOLVING**.
 
 Not all options are eligible for tuning by an automated configuration tuning algorithm. In order to separate tunable from non-tunable options, the flag **tunable** exists. 
-Some options can be set per variable other types of indices. For this use case, the *option setter* has the additional parameter **index**. To separate options which can be set per index from those which can only be set globally, the flag **indexed** exists.
+Some options can be set per variable or other types of indices. For this use case, the *option setter* has the additional parameter **index**. To separate options which can be set per index from those which can only be set globally, the flag **indexed** exists.
 
 
 ## Setting of limits
