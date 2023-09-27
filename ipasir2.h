@@ -384,7 +384,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, ipasir2_option con
  *         IPASIR2_E_INVALID_STATE if the redundancy type is not supported in the present state.
  * 
  * Required state: state <= SOLVING
- * State after: INPUT
+ * State after: if state < SOLVING then INPUT else SOLVING
  */
 IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t const* clause, int32_t len, ipasir2_redundancy redundancy);
 
