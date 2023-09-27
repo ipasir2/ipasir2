@@ -77,7 +77,7 @@ TEST_CASE("Test Notify") {
         CHECK(ret == IPASIR2_E_OK);
         ret = ipasir2_add_formula(solver, {{ 1 }, { 2 }, { -2, 3 }});
         CHECK(ret == IPASIR2_E_OK);
-        ret = ipasir2_solve(solver, &result);
+        ret = ipasir2_solve(solver, &result, nullptr, 0);
         CHECK(ret == IPASIR2_E_OK);
         CHECK(result == RESULT_SAT);
         CHECK(notifier.assigns.size() == 3);
@@ -95,7 +95,7 @@ TEST_CASE("Test Notify") {
         CHECK(ret == IPASIR2_E_OK);
         ret = ipasir2_add_formula(solver, {{ 1 }, { 2 }, { -2, 3 }});
         CHECK(ret == IPASIR2_E_OK);
-        ret = ipasir2_solve(solver, &result);
+        ret = ipasir2_solve(solver, &result, nullptr, 0);
         CHECK(ret == IPASIR2_E_OK);
         CHECK(result == RESULT_SAT);
         CHECK(notifier.assigns.size() == 3);
@@ -113,7 +113,7 @@ TEST_CASE("Test Notify") {
         CHECK(ret == IPASIR2_E_OK);
         ret = ipasir2_add_formula(solver, {{ 1, 2 }, { 3, 4 }});
         CHECK(ret == IPASIR2_E_OK);
-        ret = ipasir2_solve(solver, &result);
+        ret = ipasir2_solve(solver, &result, nullptr, 0);
         CHECK(ret == IPASIR2_E_OK);
         CHECK(result == RESULT_SAT);
         CHECK(notifier.assigns.size() == 0);
@@ -128,13 +128,13 @@ TEST_CASE("Test Notify") {
         CHECK(ret == IPASIR2_E_OK);
         ret = ipasir2_add_formula(solver, {{ 1, 2 }, { 3, 4 }});
         CHECK(ret == IPASIR2_E_OK);
-        ret = ipasir2_solve(solver, &result);
+        ret = ipasir2_solve(solver, &result, nullptr, 0);
         CHECK(ret == IPASIR2_E_OK);
         CHECK(result == RESULT_SAT);
         CHECK(notifier.assigns.size() == 0);
         ret = ipasir2_add_formula(solver, {{ -1, -2 }, { -3, -4 }});
         CHECK(ret == IPASIR2_E_OK);
-        ret = ipasir2_solve(solver, &result);
+        ret = ipasir2_solve(solver, &result, nullptr, 0);
         CHECK(ret == IPASIR2_E_OK);
         CHECK(result == RESULT_SAT);
         CHECK(notifier.assigns.size() == 0);

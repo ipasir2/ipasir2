@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <vector>
 
 #include "ipasir2.h"
 
@@ -21,14 +22,8 @@ typedef std::initializer_list<int32_t> clause;
 typedef std::initializer_list<clause> cnf;
 
 ipasir2_errorcode ipasir2_add_clause(void* solver, clause c) {
-    ipasir2_errorcode ret;
-    for (auto l : c) {
-        ret = ipasir2_add(solver, l);
-        if (ret) {
-            return ret;
-        }
-    }
-    return ipasir2_add(solver, 0);
+    std::vector<int32_t> cl(c.begin(), c.end());
+    return ipasir2_add(solver, cl.data(), cl.size(), IPASIR2_R_NONE);
 }
 
 ipasir2_errorcode ipasir2_add_formula(void* solver, cnf c) {
