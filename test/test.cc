@@ -23,7 +23,7 @@ TEST_CASE("Trivial SAT / UNSAT") {
 
     SUBCASE("SAT Empty Formula") {
         int result;
-        ret = ipasir2_solve(solver, &result);
+        ret = ipasir2_solve(solver, &result, nullptr, 0);
         CHECK(ret == IPASIR2_E_OK);
         CHECK(result == RESULT_SAT);
     }
@@ -32,7 +32,7 @@ TEST_CASE("Trivial SAT / UNSAT") {
         int result;
         ret = ipasir2_add_clause(solver, { 1 });
         CHECK(ret == IPASIR2_E_OK);
-        ret = ipasir2_solve(solver, &result);
+        ret = ipasir2_solve(solver, &result, nullptr, 0);
         CHECK(ret == IPASIR2_E_OK);
         CHECK(result == RESULT_SAT);
     }
@@ -41,7 +41,7 @@ TEST_CASE("Trivial SAT / UNSAT") {
         int result;
         ret = ipasir2_add_clause(solver, {});
         CHECK(ret == IPASIR2_E_OK);
-        ret = ipasir2_solve(solver, &result);
+        ret = ipasir2_solve(solver, &result, nullptr, 0);
         CHECK(ret == IPASIR2_E_OK);
         CHECK(result == RESULT_UNSAT);
     }
@@ -50,7 +50,7 @@ TEST_CASE("Trivial SAT / UNSAT") {
         int result;
         ret = ipasir2_add_formula(solver, {{ 1 }, { -1 }});
         CHECK(ret == IPASIR2_E_OK);
-        ret = ipasir2_solve(solver, &result);
+        ret = ipasir2_solve(solver, &result, nullptr, 0);
         CHECK(ret == IPASIR2_E_OK);
         CHECK(result == RESULT_UNSAT);
     }

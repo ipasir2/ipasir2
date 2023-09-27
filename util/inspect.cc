@@ -61,7 +61,7 @@ ipasir2_errorcode probe_availabilty_of_basic_functionality(void* solver) {
 
     if (err) return err;
 
-    err = ipasir2_solve(solver, &result);
+    err = ipasir2_solve(solver, &result, nullptr, 0);
     print_available("ipasir2_solve()", err);
 
     if (err) return err;
@@ -71,12 +71,8 @@ ipasir2_errorcode probe_availabilty_of_basic_functionality(void* solver) {
 
     if (err) return err;
 
-    err = ipasir2_assume(solver, -1);
-    print_available("ipasir2_assume()", err);
-
-    if (err) return err;
-
-    err = ipasir2_solve(solver, &result);
+    int32_t assu = -1;
+    err = ipasir2_solve(solver, &result, &assu, 1);
 
     if (err) {
         print_available("ipasir2_solve()", err);
@@ -111,22 +107,22 @@ void probe_availability_of_callbacks(void* solver) {
     print_available("ipasir2_set_export(ANY LENGTH)", err);
 
     // Test availability and available modes of import clause callback
-    err = ipasir2_set_import(solver, data, IPASIR2_R_NONE, [](void* data, const int32_t** clause, ipasir2_redundancy* red) {
+    err = ipasir2_set_import(solver, data, IPASIR2_R_NONE, [](void* data, ipasir2_redundancy red) {
             std::cout << "imported a clause" << std::endl;
         });
     print_available("ipasir2_set_import(IPASIR2_R_NONE)", err);
 
-    err = ipasir2_set_import(solver, data, IPASIR2_R_FORGETTABLE, [](void* data, const int32_t** clause, ipasir2_redundancy* red) {
+    err = ipasir2_set_import(solver, data, IPASIR2_R_FORGETTABLE, [](void* data, ipasir2_redundancy red) {
             std::cout << "imported a clause" << std::endl;
         });
     print_available("ipasir2_set_import(IPASIR2_R_FORGETTABLE)", err);
 
-    err = ipasir2_set_import(solver, data, IPASIR2_R_EQUISATISFIABLE, [](void* data, const int32_t** clause, ipasir2_redundancy* red) {
+    err = ipasir2_set_import(solver, data, IPASIR2_R_EQUISATISFIABLE, [](void* data, ipasir2_redundancy red) {
             std::cout << "imported a clause" << std::endl;
         });
     print_available("ipasir2_set_import(IPASIR2_R_EQUISATISFIABLE)", err);
 
-    err = ipasir2_set_import(solver, data, IPASIR2_R_EQUIVALENT, [](void* data, const int32_t** clause, ipasir2_redundancy* red) {
+    err = ipasir2_set_import(solver, data, IPASIR2_R_EQUIVALENT, [](void* data, ipasir2_redundancy red) {
             std::cout << "imported a clause" << std::endl;
         });
     print_available("ipasir2_set_import(IPASIR2_R_EQUIVALENT)", err);
