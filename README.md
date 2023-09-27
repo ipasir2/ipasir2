@@ -22,7 +22,7 @@ Not all of these ideas made it into the final draft of IPASIR-2, but here is a l
   - ~~in INPUT state, ability to quickly check if a set of literals is a model of the formula~~
   - ~~in SAT state, ability to quickly check if a given literal can be flipped in the model~~
   
-We are very pleased to present a draft that fulfills most of the above wishes and have created this GitHub area to share this preview of IPASIR-2 with a wider audience. In this discussion area, you can post comments if you miss a particular feature in the current version or want to learn more about the background of a particular design decision. Note that there exists a discussion areas for the new features in IPASIR-2. 
+We are pleased to present a draft that fulfills most of the above wishes and have created this GitHub area to share this preview of IPASIR-2 with a wider audience. In this discussion area, you can post comments if you miss a particular feature in the current version or want to learn more about the background of a particular design decision. Note that there exists a discussion areas for the new features in IPASIR-2. 
 
 
 ## Error Codes
