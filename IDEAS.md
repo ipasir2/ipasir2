@@ -1,0 +1,23 @@
+List of requests that were considered:
+
+  - [x] non-incremental solving mode
+  - [x] more control over pre- and in-processing to reduce overhead when solving simple problems
+  - [x] method to set the random seed
+  - [x] method to declare which variables are activation literals
+  - [x] method to specify the initial phase (activating negative branching, randomize phase)
+  - [x] method to influence the initial branching order (setting vsids score)
+  - [x] method to input IPASIR solvers as a subject to automatic tuners
+  - ~~method to access internal statistics of the solver~~
+  - [x] introduction of error codes as return values of functions
+  - ~~a callback for deleted clauses (like the learn callback)~~
+  - ~~ipasir version constant~~
+  - [x] method to import redundant clauses in parallel clause sharing frameworks
+  - [x] method to limit the number of decisions or conflicts
+  - [x] method to notfied about the current partial assignment
+  - [x] figuring out what literals could be propagated at level zero
+  - [x] coordination with IPASIR-UP authors and partial support of IPASIR-UP extension
+  - ~~in INPUT state, ability to quickly check if a set of literals is a model of the formula~~
+  - ~~in SAT state, ability to quickly check if a given literal can be flipped in the model~~
+  - ~~setx(), clearx(), supportsx()~~
+  - [x] method to activate logging
+  - ~~ipasir_reset()~~
