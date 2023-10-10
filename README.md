@@ -1,27 +1,8 @@
 # IPASIR-2 Draft and Proposal
 
 The idea of creating an improved successor to the IPASIR interface and reviving the incremental library track of the SAT competition is now two years old. The initial impetus came in late 2022, when I began systematically collecting, grouping, and evaluating requests for improvements to IPASIR which have been floating around in the IPASIR Issue Tracker on GitHub, in my Mailbox, and in discussions with users and developers of SAT solvers. 
-Not all of these ideas made it into the final draft of IPASIR-2, but here is a list of all the requests that were considered:
+Not all of these ideas made it into the final draft of IPASIR-2, but here is a list of all the requests that were considered: [IDEAS.md](IDEAS.md).
 
-  - [x] non-incremental solving mode
-  - [x] more control over pre- and in-processing to reduce overhead when solving simple problems
-  - [x] ability to set the random seed
-  - [x] ability to declare which variables are activation literals
-  - [x] ability to specify the initial phase (activating negative branching, randomize phase)
-  - [x] ability to influence the initial branching order (setting vsids score)
-  - [x] ability to input IPASIR solvers as a subject to automatic tuners
-  - ~~ability to access internal statistics of the solver~~
-  - [x] introduction of error codes as return values of functions
-  - ~~a callback for deleted clauses (like the learn callback)~~
-  - ~~ipasir version constant~~
-  - [x] ability to import redundant clauses in parallel clause sharing frameworks
-  - [x] ability to limit the number of decisions or conflicts
-  - [x] ability to notfied about the current partial assignment
-  - [x] figuring out what literals could be propagated at level zero
-  - [x] coordination with IPASIR-UP authors and partial support of IPASIR-UP extension
-  - ~~in INPUT state, ability to quickly check if a set of literals is a model of the formula~~
-  - ~~in SAT state, ability to quickly check if a given literal can be flipped in the model~~
-  
 We are pleased to present a draft that fulfills most of the above wishes and have created this GitHub area to share this preview of IPASIR-2 with a wider audience. In the [discussion area of this repository](https://github.com/orgs/ipasir2/discussions), you can share your constructive feedback on this draft, and notify us if you are missing a particular feature, or if you want to learn more about the background of a particular design decision.
 
 
