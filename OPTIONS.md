@@ -43,6 +43,17 @@ Use cases for setting deterministic solve limits include for example:
 >  - otherwise exit when number of decisions reaches n+1
 >
 
+
+## Activation of logging
+
+Determination of the level of detail of logging.
+
+> `ipasir.logging = n`
+> - `n = 0` deactivate low-level logging
+> - otherwise activate low-level logging
+>
+
+
 ## Options which can be set for each variable
 
 Use parameter index in setter to indicate the variable id, or zero if it shold be set for all variables.
