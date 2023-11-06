@@ -89,7 +89,7 @@ In some applications it is forseable which variables can occur in assumptions or
 
 ## Non-incremental solving mode
 
-This option introduces a one-shot solving mode, as by the following RFC:
+This option introduces a one-shot solving mode, as requested in the ipasir issue tracker:
 - https://github.com/biotomas/ipasir/pull/5
 
 In one-shot solving the solver can throw any pre- and inprocessing technique at the instance, regardless of whether the solver is still usable after solving or not. 
