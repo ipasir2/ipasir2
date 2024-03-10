@@ -44,44 +44,30 @@
 #include <string.h>
 
 /*
- * In this header, the macro IPASIR_API is defined as follows:
- * - if IPASIR_SHARED_LIB is not defined, then IPASIR_API is defined, but empty.
- * - if IPASIR_SHARED_LIB is defined...
- *    - ...and if BUILDING_IPASIR_SHARED_LIB is not defined, IPASIR_API is
- *      defined to contain symbol visibility attributes for importing symbols
- *      of a DSO (including the __declspec rsp. __attribute__ keywords).
- *    - ...and if BUILDING_IPASIR_SHARED_LIB is defined, IPASIR_API is defined
- *      to contain symbol visibility attributes for exporting symbols from a
- *      DSO (including the __declspec rsp. __attribute__ keywords).
+ * The IPASIR_API macro contains symbol visibility and import/export declarations.
+ *
+ * When building an IPASIR2 implementation as a shared library, and if symbol hiding is
+ * enabled or your target platforms include Win32 or Cygwin, compile with the preprocessor
+ * symbol BUILDING_IPASIR_SHARED_LIB defined.
+ *
+ * When linking to an IPASIR2 shared library at build time, and if the target platforms
+ * include Win32 or Cygwin, compile with the preprocessor symbol IPASIR_SHARED_LIB defined.
+ *
+ * If IPASIR_API is already defined elsewhere (e.g. compiler flags), that definition is not
+ * replaced.
  */
-#if defined(IPASIR_SHARED_LIB)
-    #if defined(_WIN32) || defined(__CYGWIN__)
-        #if defined(BUILDING_IPASIR_SHARED_LIB)
-            #if defined(__GNUC__)
-                #define IPASIR_API __attribute__((dllexport))
-            #elif defined(_MSC_VER)
-                #define IPASIR_API __declspec(dllexport)
-            #endif
+#if !defined(IPASIR_API)
+    #if defined(IPASIR_SHARED_LIB) && (defined(_WIN32) || defined(__CYGWIN__))
+        #define IPASIR_API __declspec(dllimport)
+    #elif defined(BUILDING_IPASIR_SHARED_LIB)
+        #if defined(_WIN32) || defined(__CYGWIN__)
+            #define IPASIR_API __declspec(dllexport)
         #else
-            #if defined(__GNUC__)
-                #define IPASIR_API __attribute__((dllimport))
-            #elif defined(_MSC_VER)
-                #define IPASIR_API __declspec(dllimport)
-            #endif
+            #define IPASIR_API __attribute__((visibility("default")))
         #endif
-    #elif defined(__GNUC__)
-        #define IPASIR_API __attribute__((visibility("default")))
-    #endif
-
-    #if !defined(IPASIR_API)
-        #if !defined(IPASIR_SUPPRESS_WARNINGS)
-            #warning "Unknown compiler. Not adding visibility information to IPASIR symbols."
-            #warning "Define IPASIR_SUPPRESS_WARNINGS to suppress this warning."
-        #endif
+    #else
         #define IPASIR_API
     #endif
-#else
-    #define IPASIR_API
 #endif
 
 #ifdef __cplusplus
