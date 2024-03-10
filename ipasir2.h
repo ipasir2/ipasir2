@@ -274,8 +274,8 @@ typedef struct ipasir2_option {
     int64_t min;
     int64_t max;
     ipasir2_state max_state;
-    bool tunable;
-    bool indexed;
+    int tunable;
+    int indexed;
     void const* handle;
 } ipasir2_option;
 
