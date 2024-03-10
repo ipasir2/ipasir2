@@ -521,15 +521,16 @@ IPASIR_API ipasir2_errorcode ipasir2_failed(void* solver, int32_t lit, int* resu
  * @brief Set a callback function used to indicate a termination requirement to the solver.
  * @details The solver periodically calls this function while being in SOLVING state.
  *          If the callback function returns a non-zero value, the solver terminates search.
- *          Subsequent calls to ipasir2_set_terminate() override the previously set callback function.
- *          Setting the callback function to nullptr disables the callback.
- *          \p callback is called with the same value for parameter \p data as the one passed to ipasir2_set_terminate().
+ *          If this function is called multiple times on \p solver, only the most recent call is considered.
+ *          When the callback function is called for \p solver, the \p data argument given in this call is passed
+ *          to the callback as its first argument.
  * 
  * Thread safety: this function is type B.
  *
  * @param solver The solver instance.
- * @param data Opaque pointer passed to the callback function as the first parameter.
- * @param callback The terminate callback function of the form "int terminate(void* data)".
+ * @param data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
+ * @param callback The terminate callback function with the same signature as "int terminate(void* data)".
+ *                 If this parameter is nullptr, this callback mechanism is disabled until the next call to this function.
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  *         IPASIR2_E_UNSUPPORTED if the solver does not support termination callbacks.
@@ -545,19 +546,20 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data,
  * @brief Set a callback function for receiving learned clauses from the solver. 
  * @details The solver calls this function for each learned clause of size <= \p max_length.
  *          The solver calls this function for each learned clause regardless of its size if \p max_length is -1.
- *          The argument \p clause is a pointer to a zero terminated integer array containing the learned clause.
- *          The solver can change the memory where \p clause points to after the function call.
- *          Subsequent calls to ipasir2_set_export() override the previously set callback function.
- *          Setting the callback function to nullptr disables the callback.
- *          \p callback is called with the same value for parameter \p data as the one passed to ipasir2_set_export().
+ *          The \p clause argument passed to the callback is a pointer to a zero terminated integer array containing
+ *          the learned clause. \p clause is only guaranteed to be valid during the execution of the callback function.
+ *          If this function is called multiple times on \p solver, only the most recent call is considered.
+ *          When the callback function is called for \p solver, the \p data argument given in this call is passed
+ *          to the callback as its first argument.
  * 
  * Thread safety: this function is type B.
  *
  * @param solver The solver instance.
- * @param data Opaque pointer passed to the callback function as the first parameter.
+ * @param data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
  * @param max_length Specifies the maximum length of the learned clauses to be returned. 
  *                   If this parameter is -1 the solver returns all learned clauses.
- * @param callback The clause export callback function of the form "void callback(void* data, int32_t const* clause)".
+ * @param callback The clause export callback function with the same signature as "void callback(void* data, int32_t const* clause)".
+ *                 If this parameter is nullptr, this callback mechanism is disabled until the next call to this function.
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  *         IPASIR2_E_UNSUPPORTED if the solver does not support clause export callbacks.
@@ -572,18 +574,10 @@ IPASIR_API ipasir2_errorcode ipasir2_set_export(void* solver, void* data, int ma
 /**
  * @brief Sets a callback for asynchronously sending clauses to the solver. 
  * @details The solver calls this function periodically while being in SOLVING state.
- *          Subsequent calls to ipasir2_set_import() override the previously set callback function.
- *          Setting the callback function to nullptr disables the callback.
- *          \p callback is called with the same value for parameter \p data as the one passed to ipasir2_set_import().
- * 
- *          The application has the responsibility to appropriately buffer the clauses
- *          until the solver decides to import (some of) them via the callback.
- *          The callback function sets its output parameter \p clause to the next clause to be imported, 
- *          which is given as a pointer to a zero terminated integer array, 
- *          or to nullptr if there is no further clause to import. 
- *          The pointer to the \p clause must be valid until the next call to the callback function 
- *          or until ipasir2_solve() terminates, whichever happens first.
- * 
+ *          If this function is called multiple times on \p solver, only the most recent call is considered.
+ *          When the callback function is called for \p solver, the \p data argument given in this call is passed
+ *          to the callback as its first argument.
+ *
  *          Applications give a \p pledge about the minimum redundancy type of the imported clauses.
  *          Solvers can reject too weak redundancy types by returning IPASIR2_E_UNSUPPORTED_ARGUMENT.
  *          The redundancy type of any imported clause must be at least as strong pledged.
@@ -592,12 +586,13 @@ IPASIR_API ipasir2_errorcode ipasir2_set_export(void* solver, void* data, int ma
  * Thread safety: this function is type B.
  *
  * @param solver The solver instance.
- * @param data Opaque pointer passed to the callback function as the first parameter.
+ * @param data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
  * @param pledge Promise on the minimum redundancy type of the clauses to be imported.
- * @param callback The clause import callback function of the form "void callback(void* data, ipasir2_redundancy min)".
+ * @param callback The clause import callback function with the same signature as "void callback(void* data, ipasir2_redundancy min)".
  *                 The callback() uses ipasir2_add() at most once to import a clause of the redundancy type given by \p min.
  *                 To import more than one clause, the callback() must be called multiple times.
  *                 If there is no further clause of the given redundancy type to be imported, the callback() returns without calling ipasir2_add().
+ *                 If this parameter is nullptr, this callback mechanism is disabled until the next call to this function.
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  *         IPASIR2_E_UNSUPPORTED if the solver does not support clause import callbacks.
@@ -619,16 +614,17 @@ IPASIR_API ipasir2_errorcode ipasir2_set_import(void* solver, void* data, ipasir
  *          This rule has implication on the minimum frequency of calls to the \p callback.
  *          All assignments must be reported to the callback before the solver switches to a different state.
  *          In particular, the solver must ensure that all assignments are reported before leaving SOLVING state.
- *          Subsequent calls to ipasir2_set_notify() override the previously set callback function.
- *          Setting the callback function to nullptr disables the callback.
- *          \p callback is called with the same value for parameter \p data as the one passed to ipasir2_set_notify().
+ *          If this function is called multiple times on \p solver, only the most recent call is considered.
+ *          When the callback function is called for \p solver, the \p data argument given in this call is passed
+ *          to the callback as its first argument.
  *
  * Thread safety: this function is type B.
  *
  * @param solver The solver instance.
- * @param data Opaque pointer passed to the callback function as the first parameter.
- * @param callback The notify callback function of the form "void callback(void* data, int32_t const* assigned, int32_t const* unassigned)".
- * 
+ * @param data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
+ * @param callback The notify callback function with the same signature as "void callback(void* data, int32_t const* assigned, int32_t const* unassigned)".
+ *                 If this parameter is nullptr, this callback mechanism is disabled until the next call to this function.
+ *
  * @return IPASIR2_E_OK if the function call was successful.
  *         IPASIR2_E_UNSUPPORTED if the solver does not support notify callbacks.
  * 
