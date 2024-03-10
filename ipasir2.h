@@ -365,10 +365,10 @@ IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const*
  * State of \p solver after the function returns: same as before
  */
 IPASIR_API inline ipasir2_errorcode ipasir2_get_option_handle(void* solver, char const* name, ipasir2_option const** handle) {
-    ipasir2_option const* options;
+    ipasir2_option const* options = NULL;
     ipasir2_errorcode err = ipasir2_options(solver, &options);
     if (err == IPASIR2_E_OK) {
-        for (; options != nullptr; options++) {
+        for (; options->name != NULL; ++options) {
             if (strcmp(options->name, name) == 0) {
                 *handle = options;
                 return IPASIR2_E_OK;
