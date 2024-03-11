@@ -335,7 +335,7 @@ IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
  * Thread safety: this function is type B.
  *
  * @param[in] solver The solver instance.
- * @param[out] options After successful execution, the output parameter points to a zero-terminated array of ipasir2_options.
+ * @param[out] options After successful execution, \p *options points to an array of ipasir2_option which is terminated by an option `o` with `o.name == nullptr`.
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  *         IPASIR2_E_UNSUPPORTED if the solver does not implement the configuration interface.
