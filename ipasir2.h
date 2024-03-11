@@ -1,12 +1,13 @@
 /**
  * IPASIR-2: The Re-entrant Incremental SAT Solver API (IPASIR) Version 2.0
- * 
+ *
  * This header specifies the API for incremental SAT solvers.
- * 
+ *
  * Terminology
  * -----------
  *
- * In IPASIR2, solver instances are represented by opaque pointers.
+ * In IPASIR2, solver instances are represented by opaque pointers obtained from
+ * ipasir2_init().
  *
  * An IPASIR2 function is considered to be called on a solver instance S if S if F is
  * called and S is passed to the IPASIR2 function as the first argument. F is considered
@@ -35,6 +36,16 @@
  *          ipasir2_solve() is executing on S, and a callback function is executing
  *          that has been called by the IPASIR2 implementation due to a call to
  *          ipasir2_solve() on S.
+ *
+ * The IPASIR2 implementation may call callback functions from any thread, but each
+ * individual solver instance may only execute callback functions sequentially. For
+ * example, if the client only calls the IPASIR2 callback setter functions with the
+ * \p data argument equalling the \p solver argument, then the IPASIR2 implementation
+ * may execute callback functions in parallel, but no two callback functions with
+ * the same \p data argument in parallel.
+ *
+ * IPASIR2 implementations may offer custom options to replace these thread-safety
+ * requirements.
  */
 
 #ifndef INTERFACE_IPASIR2_H_
