@@ -7,14 +7,11 @@
 #include <stdlib.h>
 
 
-int log_ip2_errors_impl(char const* file, int line, char const* call, ipasir2_errorcode errorcode) {
+void log_ip2_errors_impl(char const* file, int line, char const* call, ipasir2_errorcode errorcode) {
     if (errorcode != IPASIR2_E_OK) {
         fprintf(stderr, "%s:%i: %s failed with error code %i\n", file, line, call, errorcode);
         fflush(stderr);
-        return 1;
     }
-
-    return 0;
 }
 
 
