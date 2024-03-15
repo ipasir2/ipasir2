@@ -9,32 +9,14 @@ project(IPASIR-2)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/build_utils/load_solvers.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/build_utils/doxygen.cmake)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/buildutils/load_solvers.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/buildutils/doxygen.cmake)
 
 
 option(WITH_DOXYGEN "Add a target `doxygen` building Doxygen files for ipasir.h" OFF)
 
-
-function(add_solver_tool NAME SOLVER SOURCEFILE)
-    add_executable(${NAME} ${SOURCEFILE})
-    target_include_directories(${NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    add_dependencies(${NAME} ${SOLVER})
-    target_link_libraries(${NAME} PRIVATE ${SOLVER})
-    target_compile_options(${NAME} PRIVATE -Wall -Wextra -pedantic)
-    # target_compile_options(${NAME} PRIVATE -fsanitize=address)
-
-    # TODO: fix warnings
-    target_compile_options(${NAME} PRIVATE -Wno-unused)
-endfunction()
-
-
-load_cadical()
-load_cms()
-load_minisat()
-
-foreach(solver IN ITEMS cadical cms minisat)
-    add_solver_tool(test_${solver} ${solver} test/test.cc)
-    add_solver_tool(test_notify_${solver} ${solver} test/test_notify.cc)
-    add_solver_tool(inspect_${solver} ${solver} util/inspect.cc)
-endforeach()
+add_subdirectory(src)

@@ -11,7 +11,7 @@
 #include "doctest.h"
 
 #include "ipasir2.h"
-#include "util/ipasir2_util.h"
+#include "ipasir2_util.h"
 
 
 TEST_CASE("Trivial SAT / UNSAT") {
