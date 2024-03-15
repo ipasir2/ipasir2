@@ -1,0 +1,10 @@
+if (WITH_DOXYGEN)
+    find_package(Doxygen)
+
+    if(DOXYGEN_FOUND)
+        configure_file(${CMAKE_CURRENT_LIST_DIR}/doxygen_config.in ${CMAKE_BINARY_DIR}/doxygen_config)
+        add_custom_target(doxygen ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/doxygen_config WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    else()
+        message(WARNING "The target 'doxygen' could not be created because Doxygen could not be found.")
+    endif()
+endif()

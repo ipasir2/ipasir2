@@ -1,5 +1,5 @@
-# This project builds the example and test code for IPASIR2. The IPASIR2 header
-# can be used without building this.
+# This project builds the test clients and Doxygen documentation for IPASIR-2.
+# The IPASIR-2 header can be used without building this.
 
 cmake_minimum_required(VERSION 3.16.3)
 include(ExternalProject)
@@ -10,6 +10,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/build_utils/load_solvers.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/build_utils/doxygen.cmake)
+
+
+option(WITH_DOXYGEN "Add a target `doxygen` building Doxygen files for ipasir.h" OFF)
 
 
 function(add_solver_tool NAME SOLVER SOURCEFILE)
