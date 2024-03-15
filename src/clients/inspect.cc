@@ -87,7 +87,7 @@ ipasir2_errorcode probe_availabilty_of_basic_functionality(void* solver) {
 
 void probe_availability_of_callbacks(void* solver) {
     ipasir2_errorcode err = IPASIR2_E_OK;
-    void* data;
+    void* data = nullptr;
 
     // Test availability of terminate callback
     err = ipasir2_set_terminate(solver, data, [](void* data) {
