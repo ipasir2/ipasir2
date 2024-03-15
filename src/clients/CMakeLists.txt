@@ -21,4 +21,9 @@ foreach(solver IN ITEMS cadical cms minisat)
     add_solver_tool(test_${solver} ${solver} test.cc)
     add_solver_tool(test_notify_${solver} ${solver} test_notify.cc)
     add_solver_tool(inspect_${solver} ${solver} inspect.cc)
+    add_solver_tool(c_client_${solver} ${solver} c_client.c)
+
+    # Setting the linker language is required since the solvers are written
+    # in C++ and linked statically
+    set_target_properties(c_client_${solver} PROPERTIES LINKER_LANGUAGE CXX)
 endforeach()
