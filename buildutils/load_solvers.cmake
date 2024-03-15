@@ -1,3 +1,5 @@
+include(ExternalProject)
+
 function(load_cadical)
     set(CADICAL_DIR ${CMAKE_CURRENT_BINARY_DIR}/solvers/src/cadical_external/build)
     set(CADICAL_LIB ${CADICAL_DIR}/libcadical.a)
