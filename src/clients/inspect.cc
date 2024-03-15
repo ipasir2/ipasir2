@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include "ipasir2.h"
-#include "util/ipasir2_util.h"
+#include "ipasir2_util.h"
 
 
 const std::string red("\033[0;31m");
