@@ -9,8 +9,7 @@ function(load_cadical)
     else()
         message(STATUS "Injecting External Project for Fetching and Building Cadical")
         ExternalProject_Add(cadical_external
-            #GIT_REPOSITORY git@github.com:arminbiere/cadical.git 
-            GIT_REPOSITORY git@github.com:ipasir2/ipasir2_solver_cadical.git
+            GIT_REPOSITORY https://github.com/ipasir2/ipasir2_solver_cadical
             GIT_TAG master
             PREFIX solvers
             CONFIGURE_COMMAND ./configure #-fsanitize=address -g
@@ -36,8 +35,7 @@ function(load_minisat)
     else()
         message(STATUS "Injecting External Project for Fetching and Building Minisat")
         ExternalProject_Add(minisat_external
-            #GIT_REPOSITORY git@github.com:Udopia/minisat.git 
-            GIT_REPOSITORY git@github.com:ipasir2/ipasir2_solver_minisat.git
+            GIT_REPOSITORY https://github.com/ipasir2/ipasir2_solver_minisat
             GIT_TAG master
             PREFIX solvers
             INSTALL_COMMAND ""
@@ -60,8 +58,7 @@ function(load_cms)
     else()
         message(STATUS "Injecting External Project for Fetching and Building CryptoMinisat")
         ExternalProject_Add(cms_external
-            #GIT_REPOSITORY git@github.com:msoos/cryptominisat.git
-            GIT_REPOSITORY git@github.com:ipasir2/ipasir2_solver_cryptominisat.git
+            GIT_REPOSITORY https://github.com/ipasir2/ipasir2_solver_cryptominisat
             GIT_TAG master
             PREFIX solvers
             INSTALL_COMMAND ""
