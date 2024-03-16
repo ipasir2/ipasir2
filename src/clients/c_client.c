@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 
-void check_ip2_errorcode(char const* file, int line, char const* call, ipasir2_errorcode actual, ipasir2_errorcode expected) {
+int check_ip2_errorcode(char const* file, int line, char const* call, ipasir2_errorcode actual, ipasir2_errorcode expected) {
     if (actual != expected) {
         if (expected == IPASIR2_E_OK) {
             fprintf(stderr, "%s:%d: %s failed with error code %d\n", file, line, call, actual);
@@ -17,6 +17,8 @@ void check_ip2_errorcode(char const* file, int line, char const* call, ipasir2_e
         }
         fflush(stderr);
     }
+
+    return actual;
 }
 
 
@@ -30,8 +32,8 @@ void check_result_impl(char const* file, int line, int actual_value, int expecte
 
 #define MACRO_ARG_STRINGIFY(x) #x
 #define MACRO_ARG_TO_STRING(x) MACRO_ARG_STRINGIFY(x)
-#define expect_ip2_ok(x) do {check_ip2_errorcode(__FILE__, __LINE__, MACRO_ARG_TO_STRING(x), x, IPASIR2_E_OK);} while(0);
-#define expect_ip2_error(x, errorcode) do {check_ip2_errorcode(__FILE__, __LINE__, MACRO_ARG_TO_STRING(x), x, errorcode);} while(0);
+#define expect_ip2_ok(x) (check_ip2_errorcode(__FILE__, __LINE__, MACRO_ARG_TO_STRING(x), x, IPASIR2_E_OK));
+#define expect_ip2_error(x, errorcode) (check_ip2_errorcode(__FILE__, __LINE__, MACRO_ARG_TO_STRING(x), x, errorcode));
 #define check_result(actual, expected, function) do {check_result_impl(__FILE__, __LINE__, actual, expected, function);} while(0);
 
 
@@ -41,12 +43,29 @@ int terminate_fn() {
 
 
 int main(int argc, char **argv) {
-    void* solver = NULL;
-    expect_ip2_ok(ipasir2_init(&solver));
+    char const* signature = NULL;
+    expect_ip2_ok(ipasir2_signature(&signature));
+    printf("Signature: %s", signature);
 
-    if (solver == NULL) {
+    void* solver = NULL;
+    ipasir2_errorcode ipasir2_result = expect_ip2_ok(ipasir2_init(&solver));
+    if (ipasir2_result != IPASIR2_E_OK) {
         return 1;
     }
+
+
+    ipasir2_option const* options = NULL;
+    ipasir2_errorcode get_options_result = expect_ip2_ok(ipasir2_options(solver, &options));
+
+    if (get_options_result == IPASIR2_E_OK) {
+        printf("Supported options:");
+        while(options->name != NULL) {
+            printf(" %s", options->name);
+            ++options;
+        }
+        printf("\n");
+    }
+
 
     int32_t clauses[][5] = {
         {1, 2, 3},
@@ -65,7 +84,7 @@ int main(int argc, char **argv) {
     check_result(result, 10, "ipasir2_solve");
 
     expect_ip2_ok(ipasir2_val(solver, 3, &result));
-    check_result(result, 1, "ipasir2_val");
+    check_result(result, 3, "ipasir2_val");
 
     expect_ip2_error(ipasir2_val(solver, 0, &result), IPASIR2_E_INVALID_ARGUMENT);
     expect_ip2_error(ipasir2_failed(solver, 3, &result), IPASIR2_E_INVALID_STATE);
