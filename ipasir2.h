@@ -40,12 +40,10 @@
  *          that has been called by the IPASIR2 implementation due to a call to
  *          ipasir2_solve() on S.
  *
- * The IPASIR2 implementation may call callback functions from any thread, but each
- * individual solver instance may only execute callback functions sequentially. For
- * example, if the client only calls the IPASIR2 callback setter functions with the
- * \p data argument equalling the \p solver argument, then the IPASIR2 implementation
- * may execute callback functions in parallel, but no two callback functions with
- * the same \p data argument in parallel.
+ * Solver instances may call callback functions only during ipasir2_solve(), and only
+ * from the same thread where the client had called ipasir2_solve(). This serves
+ * to keep client code simple and to avoid compatibility issues, for example when
+ * IPASIR2 is used in scripting languages.
  *
  * IPASIR2 implementations may offer custom options to replace these thread-safety
  * requirements.
