@@ -12,10 +12,6 @@
  * In IPASIR2, solver instances are represented by opaque pointers obtained from
  * ipasir2_init().
  *
- * An IPASIR2 function is considered to be called on a solver instance S if S if F is
- * called and S is passed to the IPASIR2 function as the first argument. F is considered
- * to be executing on S if it has been called on S and has not yet finished execution.
- *
  *
  * Thread Safety
  * -------------
@@ -27,18 +23,11 @@
  * parallel, but executing ipasir2_add() in parallel on the same solver instance
  * is illegal.
  *
- * Each IPASIR2 function F belongs to one of the following categories:
+ * ipasir2_init() and ipasir2_signature() have no restrictions regarding multithreading.
  *
- *  - Type A: F has no restrictions regarding multithreading.
- *
- *  - Type B: Let S be the solver instance (ie. the first argument of the function).
- *      F may be called on S from any thread if calling F on S is legal in the current
- *      state of S, and any of the two following conditions is met:
- *        - the state of S is not SOLVING, and no IPASIR2 function is executing on S.
- *        - the state of S is SOLVING, and no other IPASIR2 function except
- *          ipasir2_solve() is executing on S, and a callback function is executing
- *          that has been called by the IPASIR2 implementation due to a call to
- *          ipasir2_solve() on S.
+ * All other IPASIR2 functions take a solver instance S as an argument. Clients may not
+ * access S through these functions concurrently. When S invokes a callback function,
+ * the client may access S from that callback only from the caller's thread.
  *
  * Solver instances may call callback functions only during ipasir2_solve(), and only
  * from the same thread where the client had called ipasir2_solve(). This serves
@@ -280,8 +269,6 @@ typedef struct ipasir2_option {
 
 /**
  * @brief Returns the name and the version of the incremental SAT solver library.
- * 
- * Thread safety: this function is type A.
  *
  * @param[out] signature After successful execution, \p *signature points to a string containing the library name and version.
  * 
@@ -293,8 +280,6 @@ IPASIR_API ipasir2_errorcode ipasir2_signature(char const** signature);
 /**
  * @brief Constructs a new solver instance and set result to return a pointer to it.
  * @details Use the returned pointer as the first parameter in each of the following functions.
- *
- * Thread safety: this function is type A.
  *
  * @param[out] solver After successful execution, \p *solver points to the created solver instance.
  * 
@@ -310,8 +295,6 @@ IPASIR_API ipasir2_errorcode ipasir2_init(void** solver);
  * @brief Releases the given solver (destructor).
  * @details Release all solver resources and allocated memory. 
  *          The solver pointer cannot be used for any purposes after this call.
- * 
- * Thread safety: this function is type B.
  *
  * @param[in] solver The solver instance to be released.
  * 
@@ -329,8 +312,6 @@ IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
  * @details The array contains all available options for the solver.
  *          The array is owned by the solver and must not be freed by the caller.
  *          Options in the namespace "ipasir." are reserved by IPASIR specification.
- * 
- * Thread safety: this function is type B.
  *
  * @param[in] solver The solver instance.
  * @param[out] options After successful execution, \p *options points to an array of ipasir2_option which is terminated by an option `o` with `o.name == nullptr`.
@@ -348,8 +329,6 @@ IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const*
  * @brief Returns the handle to the option with the given name.
  * @details The handle can be used to set the option value.
  *          Convenience function for searching the option array returned by ipasir2_options().
- * 
- * Thread safety: this function is type B.
  *
  * @param[in] solver The solver instance.
  * @param[in] name The option identifier.
@@ -383,8 +362,6 @@ IPASIR_API inline ipasir2_errorcode ipasir2_get_option_handle(void* solver, char
  * @brief Sets value of option identified by the given handle.
  * @details The option value is set to the given value if the value is within the allowed range, 
  *          and if the solver is in a state in which the option is allowed to be set.
- * 
- * Thread safety: this function is type B.
  *
  * @param[in] solver The solver instance.
  * @param[in] handle The option handle.
@@ -411,8 +388,6 @@ IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, ipasir2_option con
  * @details Clauses added this way cannot be removed. 
  *          The addition of removable clauses can be simulated using activation literals and assumptions.
  *          Literals are encoded as (non-zero) integers as in the DIMACS formats.
- * 
- * Thread safety: this function is type B.
  *
  * @param[in] solver The solver instance.
  * @param[in] clause The clause of length \p len to be added.
@@ -442,8 +417,6 @@ IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t const* clause, in
  *          The state of the solver during execution of ipasir2_solve() is SOLVING.
  *          If the solver calls any of the callback functions during execution of ipasir2_solve(), the state of the solver is SOLVING as well.
  *          Callbacks are allowed to call any ipasir2 function which is allowed in the SOLVING state.
- * 
- * Thread safety: this function is type B.
  *
  * @param[in] solver The solver instance.
  * @param[in] literals Array of assumptions literals (can be nullptr in case of no assumptions).
@@ -470,8 +443,6 @@ IPASIR_API ipasir2_errorcode ipasir2_solve(void* solver, int* result, int32_t co
  *          and is set to '-lit' if \p lit is not satisfied by the model.
  *          The output parameter \p *result may be set to zero if the found assignment is satisfying for both 'lit' and '-lit'.
  *          Each solution that agrees with all non-zero values of ipasir2_val() is a model of the formula.
- * 
- * Thread safety: this function is type B.
  *
  * @param[in] solver The solver instance.
  * @param[in] lit The literal whose truth value is to be returned.
@@ -497,8 +468,6 @@ IPASIR_API ipasir2_errorcode ipasir2_val(void* solver, int32_t lit, int32_t* res
  *          forms a (not necessarily minimal) unsatisfiable core for the formula. This means the formula is unsatisfiable 
  *          under this subset of the previously used assumption literals. 
  *
- * Thread safety: this function is type B.
- *
  * @param[in] solver The solver instance.
  * @param[in] lit The assumption literal.
  * @param[out] result After successful execution, \p *result is set to 1
@@ -521,8 +490,6 @@ IPASIR_API ipasir2_errorcode ipasir2_failed(void* solver, int32_t lit, int* resu
  *          If this function is called multiple times on \p solver, only the most recent call is considered.
  *          When the callback function is called for \p solver, the \p data argument given in this call is passed
  *          to the callback as its first argument.
- * 
- * Thread safety: this function is type B.
  *
  * @param[in] solver The solver instance.
  * @param[in] data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
@@ -548,8 +515,6 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data,
  *          If this function is called multiple times on \p solver, only the most recent call is considered.
  *          When the callback function is called for \p solver, the \p data argument given in this call is passed
  *          to the callback as its first argument.
- * 
- * Thread safety: this function is type B.
  *
  * @param[in] solver The solver instance.
  * @param[in] data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
@@ -579,8 +544,6 @@ IPASIR_API ipasir2_errorcode ipasir2_set_export(void* solver, void* data, int ma
  *          Solvers can reject too weak redundancy types by returning IPASIR2_E_UNSUPPORTED_ARGUMENT.
  *          The redundancy type of any imported clause must be at least as strong pledged.
  *          The callback function sets \p type to the actual redundancy type of the clause.
- *
- * Thread safety: this function is type B.
  *
  * @param[in] solver The solver instance.
  * @param[in] data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
@@ -614,8 +577,6 @@ IPASIR_API ipasir2_errorcode ipasir2_set_import(void* solver, void* data, ipasir
  *          If this function is called multiple times on \p solver, only the most recent call is considered.
  *          When the callback function is called for \p solver, the \p data argument given in this call is passed
  *          to the callback as its first argument.
- *
- * Thread safety: this function is type B.
  *
  * @param[in] solver The solver instance.
  * @param[in] data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
