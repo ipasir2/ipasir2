@@ -341,7 +341,7 @@ IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const*
  * Required state of \p solver: state <= SOLVING
  * State of \p solver after the function returns: same as before
  */
-IPASIR_API inline ipasir2_errorcode ipasir2_get_option_handle(void* solver, char const* name, ipasir2_option const** handle) {
+inline ipasir2_errorcode ipasir2_get_option_handle(void* solver, char const* name, ipasir2_option const** handle) {
     ipasir2_option const* options = NULL;
     ipasir2_errorcode err = ipasir2_options(solver, &options);
     if (err == IPASIR2_E_OK) {
