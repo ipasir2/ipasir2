@@ -107,25 +107,10 @@ void probe_availability_of_callbacks(void* solver) {
     print_available("ipasir2_set_export(ANY LENGTH)", err);
 
     // Test availability and available modes of import clause callback
-    err = ipasir2_set_import(solver, data, IPASIR2_R_NONE, [](void* data, ipasir2_redundancy red) {
+    err = ipasir2_set_import(solver, data, [](void* data) {
             std::cout << "imported a clause" << std::endl;
         });
     print_available("ipasir2_set_import(IPASIR2_R_NONE)", err);
-
-    err = ipasir2_set_import(solver, data, IPASIR2_R_FORGETTABLE, [](void* data, ipasir2_redundancy red) {
-            std::cout << "imported a clause" << std::endl;
-        });
-    print_available("ipasir2_set_import(IPASIR2_R_FORGETTABLE)", err);
-
-    err = ipasir2_set_import(solver, data, IPASIR2_R_EQUISATISFIABLE, [](void* data, ipasir2_redundancy red) {
-            std::cout << "imported a clause" << std::endl;
-        });
-    print_available("ipasir2_set_import(IPASIR2_R_EQUISATISFIABLE)", err);
-
-    err = ipasir2_set_import(solver, data, IPASIR2_R_EQUIVALENT, [](void* data, ipasir2_redundancy red) {
-            std::cout << "imported a clause" << std::endl;
-        });
-    print_available("ipasir2_set_import(IPASIR2_R_EQUIVALENT)", err);
 
     // Test availability of notify callback
     err = ipasir2_set_notify(solver, data, [](void* data, int32_t const* assign, int32_t const* unassign) {
