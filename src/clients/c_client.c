@@ -74,9 +74,9 @@ int main(int argc, char **argv) {
         {-1}
     };
 
-    expect_ip2_ok(ipasir2_add(solver, clauses[0], 3, IPASIR2_R_NONE));
-    expect_ip2_ok(ipasir2_add(solver, clauses[1], 2, IPASIR2_R_NONE));
-    expect_ip2_ok(ipasir2_add(solver, clauses[2], 2, IPASIR2_R_NONE));
+    expect_ip2_ok(ipasir2_add(solver, clauses[0], 3, 0));
+    expect_ip2_ok(ipasir2_add(solver, clauses[1], 2, 0));
+    expect_ip2_ok(ipasir2_add(solver, clauses[2], 2, 0));
     expect_ip2_ok(ipasir2_set_terminate(solver, solver, terminate_fn));
 
     int result = 0;
@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
     expect_ip2_error(ipasir2_val(solver, 0, &result), IPASIR2_E_INVALID_ARGUMENT);
     expect_ip2_error(ipasir2_failed(solver, 3, &result), IPASIR2_E_INVALID_STATE);
 
-    expect_ip2_ok(ipasir2_add(solver, clauses[3], 1, IPASIR2_R_NONE));
+    expect_ip2_ok(ipasir2_add(solver, clauses[3], 1, 0));
 
     int32_t assumptions[] = {-3};
     expect_ip2_ok(ipasir2_solve(solver, &result, assumptions, 1));

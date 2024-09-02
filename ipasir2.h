@@ -150,6 +150,7 @@ typedef enum ipasir2_state {
     IPASIR2_S_SOLVING,
 } ipasir2_state;
 
+
 /**
  * @struct ipasir2_option
  * @brief IPASIR Configuration Options

@@ -23,7 +23,7 @@ typedef std::initializer_list<clause> cnf;
 
 ipasir2_errorcode ipasir2_add_clause(void* solver, clause c) {
     std::vector<int32_t> cl(c.begin(), c.end());
-    return ipasir2_add(solver, cl.data(), cl.size(), IPASIR2_R_NONE);
+    return ipasir2_add(solver, cl.data(), cl.size(), 0);
 }
 
 ipasir2_errorcode ipasir2_add_formula(void* solver, cnf c) {
