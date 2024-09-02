@@ -44,18 +44,13 @@ class Notifier {
 
         Notifier() : assigns() {}
 
-        static void notify_callback_wrapper(void* context, int32_t const* assigned, int32_t const* unassigned) {
-            static_cast<Notifier*>(context)->notify_callback(assigned, unassigned);
+        static void notify_callback_wrapper(void* context, int32_t fixed) {
+            static_cast<Notifier*>(context)->notify_callback(fixed);
         }
 
     private:
-        void notify_callback(int32_t const* assigned, int32_t const* unassigned) {
-            for (int i = 0; assigned[i]; i++) {
-                assigns.push_back(assigned[i]);
-            }
-            for (int i = 0; unassigned[i]; i++) {
-                assigns.erase(std::remove(assigns.begin(), assigns.end(), unassigned[i]), assigns.end());
-            }            
+        void notify_callback(int32_t fixed) {
+            assigns.push_back(fixed);
         }
 };
 
@@ -73,7 +68,7 @@ TEST_CASE("Test Notify") {
     SUBCASE("Notify units") {
         Notifier notifier;
         int result;
-        ret = ipasir2_set_notify(solver, &notifier, Notifier::notify_callback_wrapper);
+        ret = ipasir2_set_fixed(solver, &notifier, Notifier::notify_callback_wrapper);
         CHECK(ret == IPASIR2_E_OK);
         ret = ipasir2_add_formula(solver, {{ 1 }, { 2 }, { -2, 3 }});
         CHECK(ret == IPASIR2_E_OK);
@@ -89,7 +84,7 @@ TEST_CASE("Test Notify") {
     SUBCASE("Notify units under decision limit") {
         Notifier notifier;
         int result;
-        ret = ipasir2_set_notify(solver, &notifier, Notifier::notify_callback_wrapper);
+        ret = ipasir2_set_fixed(solver, &notifier, Notifier::notify_callback_wrapper);
         CHECK(ret == IPASIR2_E_OK);
         ret = ipasir2_set_option(solver, dlim, 0, 0);
         CHECK(ret == IPASIR2_E_OK);
@@ -107,7 +102,7 @@ TEST_CASE("Test Notify") {
     SUBCASE("Do not notify pure literals under decision limit") {
         Notifier notifier;
         int result;
-        ret = ipasir2_set_notify(solver, &notifier, Notifier::notify_callback_wrapper);
+        ret = ipasir2_set_fixed(solver, &notifier, Notifier::notify_callback_wrapper);
         CHECK(ret == IPASIR2_E_OK);
         ret = ipasir2_set_option(solver, dlim, 0, 0);
         CHECK(ret == IPASIR2_E_OK);
@@ -122,7 +117,7 @@ TEST_CASE("Test Notify") {
     SUBCASE("Do not notify pure literals under decision limit in second call") {
         Notifier notifier;
         int result;
-        ret = ipasir2_set_notify(solver, &notifier, Notifier::notify_callback_wrapper);
+        ret = ipasir2_set_fixed(solver, &notifier, Notifier::notify_callback_wrapper);
         CHECK(ret == IPASIR2_E_OK);
         ret = ipasir2_set_option(solver, dlim, 0, 0);
         CHECK(ret == IPASIR2_E_OK);

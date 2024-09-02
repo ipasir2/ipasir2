@@ -112,11 +112,11 @@ void probe_availability_of_callbacks(void* solver) {
         });
     print_available("ipasir2_set_import(IPASIR2_R_NONE)", err);
 
-    // Test availability of notify callback
-    err = ipasir2_set_notify(solver, data, [](void* data, int32_t const* assign, int32_t const* unassign) {
-            std::cout << "assigned a bunch of variables" << std::endl;
+    // Test availability of fixed assignment callback
+    err = ipasir2_set_fixed(solver, data, [](void* data, int32_t fixed) {
+            std::cout << "fixed value " << fixed << std::endl;
         });
-    print_available("ipasir2_set_notify()", err);
+    print_available("ipasir2_set_fixed()", err);
 }
 
 ipasir2_errorcode probe_availability_of_options(void* solver) {

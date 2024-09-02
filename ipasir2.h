@@ -491,30 +491,22 @@ IPASIR_API ipasir2_errorcode ipasir2_set_import(void* solver, void* data, void (
 
 
 /**
- * @brief Sets a callback to notify about changes in the current partial assignment under analysis.
- * @details The solver calls this function periodically while being in SOLVING state.
- *          Changes are returned for all variables that have been assigned or unassigned since the last call to the callback.
- *          The solver must ensure that variables in \p assigned and \p unassigned are non-intersecting.
- *          This rule has implication on the minimum frequency of calls to the \p callback.
- *          All assignments must be reported to the callback before the solver switches to a different state.
- *          In particular, the solver must ensure that all assignments are reported before leaving SOLVING state.
- *          If this function is called multiple times on \p solver, only the most recent call is considered.
- *          When the callback function is called for \p solver, the \p data argument given in this call is passed
- *          to the callback as its first argument.
+ * @brief Sets a callback to notify about fixed assignments.
+ * @details The solver calls this function while being in SOLVING state.
+ *         I the solver determines that a variable is fixed to a certain value, it calls this function.
  *
  * @param[in] solver The solver instance.
  * @param[in] data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
- * @param[in] callback The notify callback function with the same signature as "void callback(void* data, int32_t const* assigned, int32_t const* unassigned)".
- *                     If this parameter is nullptr, this callback mechanism is disabled until the next call to this function.
+ * @param[in] callback The notify callback function with the same signature as "void callback(void* data, int32_t fixed)".
+ *                     If this parameter is nullptr, this callback mechanism is disabled.
  *
  * @return IPASIR2_E_OK if the function call was successful.
- *         IPASIR2_E_UNSUPPORTED if the solver does not support notify callbacks.
+ *         IPASIR2_E_UNSUPPORTED if the solver does not support fixed assignment callbacks.
  * 
  * Required state of \p solver: <= SOLVING
  * State of \p solver after the function returns: same as before
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_notify(void* solver, void* data, 
-    void (*callback)(void* data, int32_t const* assigned, int32_t const* unassigned));
+IPASIR_API ipasir2_errorcode ipasir2_set_fixed(void* solver, void* data, void (*callback)(void* data, int32_t fixed));
 
 #ifdef __cplusplus
 }  // closing extern "C"
