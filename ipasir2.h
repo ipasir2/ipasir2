@@ -150,68 +150,6 @@ typedef enum ipasir2_state {
     IPASIR2_S_SOLVING,
 } ipasir2_state;
 
-
-/**
- * @enum ipasir2_redundancy
- * @brief Redundancy type for the import clause callback.
- * @details The import clause callback is used to import clauses.
- *     The import callback setter pledges the minimally expected redundancy type. 
- *     
- *     Redundancy type pledges are ordered from stronger to weaker as follows: 
- *          EQUIVALENT > EQUISATISFIABLE > FORGETTABLE > NONE.
- * 
- * The callback function returns a clause and the redundancy type that applies to that clause.
- * This redundancy type must be at least as strong as the redundancy type pledged by the callback setter.
- * For example, if the import callback setter pledges to return clauses of type EQUISATISFIABLE, 
- * the callback may also return clauses of type EQUIVALENT, but not clauses of type FORGETTABLE or NONE.
- * 
- * @var ipasir2_redundancy::IPASIR2_R_NONE
- *  @brief Irredundant clauses.
- *  @details The clauses served by the import clause callback are not necessarily redundant 
- *      and might change the satisfiability of the formula.
- *      Irredundant clauses might introduce new variables.
- * 
- *      Pragmatics: In presence of an external theory solver, 
- *                  clauses which are hard to derive again are marked as irredundent, 
- *                  such that the solver must keep them.
- * 
- * @var ipasir2_redundancy::IPASIR2_R_FORGETTABLE
- *  @brief Irredundant but forgettable clauses.
- *  @details The clauses served by the import clause callback are not necessarily redundant
- *      and might change the satisfiability of the formula. 
- *      However, the solver is allowed to forget these clauses.
- *      Forgettable clauses might introduce new variables.
- * 
- *      Pragmatics: In presence of an external theory solver,
- *                  clauses which are easy to derive again are marked as forgettable,
- *                  and will be added again if needed.
- * 
- * @var ipasir2_redundancy::IPASIR2_R_EQUISATISFIABLE
- *  @brief Equisatisfiable clauses.
- *  @details The clauses served by the import clause callback are satisfiability preserving.
- *      Satisfiability preserving clauses might introduce new variables.
- * 
- *      Pragmatics: In clause sharing parallel portfolios, derived clauses are not 
- *                  allowed to change the satisfiability of the formula, 
- *                  but might change the models, e.g. if extended resolution 
- *                  or blocked clause elimination are allowed.
- * 
- * @var ipasir2_redundancy::IPASIR2_R_EQUIVALENT
- *  @brief Equivalence preserving clauses.
- *  @details The clauses served by the import clause callback are equivalence preserving.
- *      Equivalence preserving clauses do not introduce new variables.
- * 
- *      Pragmatics: Only clauses that preserve the models of the formula are allowed.
- * 
- */
-typedef enum ipasir2_redundancy {
-    IPASIR2_R_NONE = 0,
-    IPASIR2_R_FORGETTABLE = 1,
-    IPASIR2_R_EQUISATISFIABLE,
-    IPASIR2_R_EQUIVALENT,
-} ipasir2_redundancy;
-
-
 /**
  * @struct ipasir2_option
  * @brief IPASIR Configuration Options
@@ -392,21 +330,15 @@ IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, ipasir2_option con
  * @param[in] solver The solver instance.
  * @param[in] clause The clause of length \p len to be added.
  * @param[in] len The number of literals in \p clause.
- * @param[in] redundancy The redundancy type of \p clause with respect to the previously added irredundant clauses.
- *                       The redundancy of \p clause affects its required persistency and
- *                       its potential impact on solver state consistency.
- *                       This is mostly relevent when used from the import-callback, e.g.,
- *                       in the context of parallel SAT solver frameworks or
- *                       in case of lazily encoded background theories.
+ * @param[in] forgettable If forgettable is set to 0, the solver guarantees to satisfy the clause in any potentially found model.
+ *         Otherwise, the clause is forgettable, i.e., the solver may remove the clause from the formula.
  * 
  * @return IPASIR2_E_OK if the function call was successful.
- *         IPASIR2_E_UNSUPPORTED_ARGUMENT if the redundancy type is generally not supported.
- *         IPASIR2_E_INVALID_STATE if the redundancy type is not supported in the present state.
  * 
  * Required state of \p solver: state <= SOLVING
  * State of \p solver after the function returns: if state < SOLVING then INPUT else SOLVING
  */
-IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t const* clause, int32_t len, ipasir2_redundancy redundancy);
+IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t const* clause, int32_t len, int32_t forgettable);
 
 
 /**
@@ -540,30 +472,21 @@ IPASIR_API ipasir2_errorcode ipasir2_set_export(void* solver, void* data, int ma
  *          When the callback function is called for \p solver, the \p data argument given in this call is passed
  *          to the callback as its first argument.
  *
- *          Applications give a \p pledge about the minimum redundancy type of the imported clauses.
- *          Solvers can reject too weak redundancy types by returning IPASIR2_E_UNSUPPORTED_ARGUMENT.
- *          The redundancy type of any imported clause must be at least as strong pledged.
- *          The callback function sets \p type to the actual redundancy type of the clause.
- *
  * @param[in] solver The solver instance.
  * @param[in] data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
- * @param[in] pledge Promise on the minimum redundancy type of the clauses to be imported.
- * @param[in] callback The clause import callback function with the same signature as "void callback(void* data, ipasir2_redundancy min)".
- *                     The callback() uses ipasir2_add() at most once to import a clause of the redundancy type given by \p min.
+ * @param[in] callback The clause import callback function with the same signature as "void callback(void* data)".
+ *                     The callback() uses ipasir2_add() at most once to import a clause.
  *                     To import more than one clause, the callback() must be called multiple times.
- *                     If there is no further clause of the given redundancy type to be imported, the callback() returns without calling ipasir2_add().
- *                     If this parameter is nullptr, this callback mechanism is disabled until the next call to this function.
+ *                     If there is no further clause to be imported, the callback() returns without calling ipasir2_add().
+ *                     If this parameter is nullptr, this callback is disabled.
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  *         IPASIR2_E_UNSUPPORTED if the solver does not support clause import callbacks.
- *         IPASIR2_E_UNSUPPORTED_ARGUMENT if the solver does not support importing clauses 
- *              of redundancy type as low as the given \p pledge.
  *
  * Required state of \p solver: <= SOLVING
  * State of \p solver after the function returns: same as before
  */
-IPASIR_API ipasir2_errorcode ipasir2_set_import(void* solver, void* data, ipasir2_redundancy pledge, 
-    void (*callback)(void* data, ipasir2_redundancy min));
+IPASIR_API ipasir2_errorcode ipasir2_set_import(void* solver, void* data, void (*callback)(void* data));
 
 
 /**
