@@ -43,8 +43,8 @@ To facilitate support for different use cases, there is a parameter over which a
 Imported irredundant clauses must be treated as original problem clauses and must not be forgotten. Note that in the case of IPASIR-UP, clauses resulting from lazy encodings can be safely imported as redundant due to the tight integration of user propagators.
 
 
-## Assignment Notification
+## Fixed Variable Notification
 
-IPASIR-2 supports setting a callback function that exports recent changes to the current partial assignment in the form of two arrays, one for recently assigned variables and one for recently unassigned variables. One use case for this is to be notified about variables which are assigned when the decision limit is set to zero (cf. configuration interface). Applications which manage the interplay between several solvers can observe partial assignments for reinforcing diversification (in case of parallel search) or for deciding about which clauses to make available to the import clause callback (in case of parallel search or in case of an externally managed, lazily encoded background theory). 
+IPASIR-2 supports setting a callback function that exports fixed variables, i.e., unit literals that are guaranteed to hold in any assignment of the formula. Many applications of incremental SAT solvers benefit from knowing which literals are directly implied by the formula. We also add a configuration option that modifies the behavior of this function to include literals that are directly implied by the formula and the set of active assumptions.
 
 
