@@ -250,10 +250,12 @@ IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
  * @brief Returns the configuration options which are supported by the solver.
  * @details The array contains all available options for the solver.
  *          The array is owned by the solver and must not be freed by the caller.
- *          Options in the namespace "ipasir." are reserved by IPASIR specification.
+ *          The options in the namespace "ipasir." are reserved to the IPASIR specification.
+ *          Other options are solver-specific.
  *
  * @param[in] solver The solver instance.
- * @param[out] options After successful execution, \p *options points to an array of ipasir2_option which is terminated by an option `o` with `o.name == nullptr`.
+ * @param[out] options Output parameter, \p *options is a pointer to an ipasir2_option array of \p count elements.
+ * @param[out] count Output parameter, \p *count contains the number of elements in the \p options array.
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  *         IPASIR2_E_UNSUPPORTED if the solver does not implement the configuration interface.
@@ -261,7 +263,7 @@ IPASIR_API ipasir2_errorcode ipasir2_release(void* solver);
  * Required state of \p solver: state <= SOLVING
  * State of \p solver after the function returns: same as before
  */
-IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const** options);
+IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const** options, int* count);
 
 
 /**
@@ -282,9 +284,10 @@ IPASIR_API ipasir2_errorcode ipasir2_options(void* solver, ipasir2_option const*
  */
 inline ipasir2_errorcode ipasir2_get_option_handle(void* solver, char const* name, ipasir2_option const** handle) {
     ipasir2_option const* options = NULL;
-    ipasir2_errorcode err = ipasir2_options(solver, &options);
+    int count = 0;
+    ipasir2_errorcode err = ipasir2_options(solver, &options, &count);
     if (err == IPASIR2_E_OK) {
-        for (; options->name != NULL; ++options) {
+        for (int i = 0; i < count; ++i, ++options) {
             if (strcmp(options->name, name) == 0) {
                 *handle = options;
                 return IPASIR2_E_OK;
@@ -298,9 +301,12 @@ inline ipasir2_errorcode ipasir2_get_option_handle(void* solver, char const* nam
 
 
 /** 
- * @brief Sets value of option identified by the given handle.
- * @details The option value is set to the given value if the value is within the allowed range, 
- *          and if the solver is in a state in which the option is allowed to be set.
+ * @brief Sets value of the given option.
+ * @details The value of option \p handle is set to the given \p value. 
+ *          Parameter \p value must be in the allowed range as specified in the option handle (>=min, <=max).
+ *          The solver must be in a state in which the option is allowed to be set (<=max_state).
+ *          If the option is indexed, the \p index parameter specifies the variable for which the option is set.
+ *          If the option is not indexed, the \p index parameter is ignored.
  *
  * @param[in] solver The solver instance.
  * @param[in] handle The option handle.
@@ -310,7 +316,7 @@ inline ipasir2_errorcode ipasir2_get_option_handle(void* solver, char const* nam
  *                      The \p index contains the variable index for which the option is to be set.
  *                      Use zero if the value should be applied to all variables.
  *                  - ipasir2_option::indexed == false:
- *                      The \p index is ignored and can be set to any value.
+ *                      The \p index is ignored.
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  *         IPASIR2_E_INVALID_OPTION_VALUE if the option value is outside the allowed range.
@@ -323,23 +329,28 @@ IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, ipasir2_option con
 
 
 /**
- * @brief Adds the given literal into the currently added clause or finalize the clause with a 0. 
- * @details Clauses added this way cannot be removed. 
- *          The addition of removable clauses can be simulated using activation literals and assumptions.
- *          Literals are encoded as (non-zero) integers as in the DIMACS formats.
+ * @brief Adds a clause to the formula.
+ * @details The \p clause is a pointer to an array of literals of length \p len.
+ *          If \p forgettable is set to 0, the solver guarantees to satisfy the clause in any potentially found model.
+ *          Otherwise, the solver may remove the clause from the formula.
+ *          Literals are encoded as (non-zero) integers as in the DIMACS format.
+ *          To support a wide range of proof formats, the solver may accept additional \p proofmeta data of length \p proofmeta_bytes.
+ *          The semantics of the proof metadata is specific to the selected proof method and is specified in the configuration options.
  *
  * @param[in] solver The solver instance.
  * @param[in] clause The clause of length \p len to be added.
  * @param[in] len The number of literals in \p clause.
  * @param[in] forgettable If forgettable is set to 0, the solver guarantees to satisfy the clause in any potentially found model.
  *         Otherwise, the clause is forgettable, i.e., the solver may remove the clause from the formula.
+ * @param[in] proofmeta Opaque pointer to proof metadata. May be nullptr.
+ * @param[in] proofmeta_bytes The number of bytes in the proof metadata. Must be zero if \p proofmeta is nullptr.
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  * 
  * Required state of \p solver: state <= SOLVING
  * State of \p solver after the function returns: if state < SOLVING then INPUT else SOLVING
  */
-IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t const* clause, int32_t len, int32_t forgettable);
+IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t const* clause, int32_t len, int32_t forgettable, void* proofmeta, int32_t proofmeta_bytes);
 
 
 /**
@@ -447,6 +458,8 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data,
  *          The remaining parameters are \p clause, a pointer to an integer array containing the learned clause, and \p len, the length of the learned clause.
  *          The \p clause pointer is only guaranteed to be valid only during the execution of the \p callback function.
  *          If this callback setter is called several times on the \p solver, only the most recent call is taken into account.
+ *          Some proof formats may require additional \p proofmeta data of length \p proofmeta_bytes.
+ *          The semantics of the proof metadata is specific to the selected proof method and is specified in the configuration options.
  *
  * @param[in] solver The solver instance.
  * @param[in] data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
@@ -461,7 +474,25 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data,
  * State of \p solver after the function returns: same as before
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_export(void* solver, void* data, int max_length, 
-    void (*callback)(void* data, int32_t const* clause, int32_t len));
+    void (*callback)(void* data, int32_t const* clause, int32_t len, void* proofmeta, int32_t proofmeta_bytes));
+
+
+/**
+ * @brief Sets a callback function for notifying about deleted clauses.
+ *        The solver calls this function in the SOLVING state for each clause that is deleted from the formula.
+ *        The argument \p data is passed on to the \p callback function as its first parameter.
+ *        The remaining parameters are \p clause, a pointer to an integer array containing the deleted clause, and \p len, the length of the deleted clause.
+ *        The \p clause pointer is only guaranteed to be valid only during the execution of the \p callback function.
+ *        Some proof formats may require additional \p proofmeta data of length \p proofmeta_bytes.
+ *        The semantics of the proof metadata is specific to the selected proof method and is specified in the configuration options.
+ * 
+ * @param solver The solver instance.
+ * @param data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
+ * @param callback The clause delete callback function. If this parameter is nullptr, the callback is disabled.
+ * @return IPASIR_API 
+ */
+IPASIR_API ipasir2_errorcode ipasir2_set_delete(void* solver, void* data, 
+    void (*callback)(void* data, int32_t const* clause, int32_t len, void* proofmeta, int32_t proofmeta_bytes));
 
 
 /**
