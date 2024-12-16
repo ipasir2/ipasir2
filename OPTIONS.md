@@ -31,7 +31,7 @@ Some options can be set per variable or other types of indices. For this use cas
 These options are usually not eligible for tuning. 
 Use cases for setting deterministic solve limits include for example: 
 - "Local Search with a SAT Oracle for Combinatorial Optimization" by Aviad Cohen, Alexander Nadel and Vadim Ryvchin (TACAS 2021)
-- determination of implied facts by setting decision level to zero and listening to assignments with an ipasir2 notify callback
+- determination of implied facts by setting decision level to zero and listening to assignments with an ipasir2 fixed callback
 
 > `ipasir.limits.conflicts = n`
 >  - `n = -1` no conflict limit
@@ -109,29 +109,10 @@ Specify how to propagate assumptions. Use cases include:
 > - `n=0` propagate one assumption per decision level
 > - `n=1` propagate all assumptions _at once_ on first decision level
 
+### Treat assumptions as fixed
 
-## Preprocessing Options
+Normally the fixed() callback only notifies about fixed assignments at level zero. With this option enabled, use the fixed() callback to also notify about literals implied by assumptions.
 
-Preprocessing configuration options.
-
-> `ipasir.preprocessing = n`
-> - `n=0` disable
-> - `n=1` enable
-
-### Variable Elimination Options
-
-> `ipasir.preprocessing.elim = n`
-> - `n=0` disable
-> - `n=1` enable
-
-### Subsumption Options
-
-> `ipasir.preprocessing.subsumption = n`
-> - `n=0` disable
-> - `n=1` enable
-
-
-
-
-
-
+> `ipasir.assumptions.fixed = n`
+> - `n=0` do not treat assumptions as fixed (default)
+> - `n=1` treat assumptions as fixed
