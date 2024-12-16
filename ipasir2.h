@@ -334,23 +334,22 @@ IPASIR_API ipasir2_errorcode ipasir2_set_option(void* solver, ipasir2_option con
  *          If \p forgettable is set to 0, the solver guarantees to satisfy the clause in any potentially found model.
  *          Otherwise, the solver may remove the clause from the formula.
  *          Literals are encoded as (non-zero) integers as in the DIMACS format.
- *          To support a wide range of proof formats, the solver may accept additional \p proofmeta data of length \p proofmeta_bytes.
- *          The semantics of the proof metadata is specific to the selected proof method and is specified in the configuration options.
+ *          \p proofmeta points to a struct containing additional proof metadata.
+ *          The struct type and its semantics are specific to the selected proof method and are specified in the configuration options..
  *
  * @param[in] solver The solver instance.
  * @param[in] clause The clause of length \p len to be added.
  * @param[in] len The number of literals in \p clause.
  * @param[in] forgettable If forgettable is set to 0, the solver guarantees to satisfy the clause in any potentially found model.
  *         Otherwise, the clause is forgettable, i.e., the solver may remove the clause from the formula.
- * @param[in] proofmeta Opaque pointer to proof metadata. May be nullptr.
- * @param[in] proofmeta_bytes The number of bytes in the proof metadata. Must be zero if \p proofmeta is nullptr.
+ * @param[in] proofmeta Opaque pointer to proof metadata.
  * 
  * @return IPASIR2_E_OK if the function call was successful.
  * 
  * Required state of \p solver: state <= SOLVING
  * State of \p solver after the function returns: if state < SOLVING then INPUT else SOLVING
  */
-IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t const* clause, int32_t len, int32_t forgettable, void* proofmeta, int32_t proofmeta_bytes);
+IPASIR_API ipasir2_errorcode ipasir2_add(void* solver, int32_t const* clause, int32_t len, int32_t forgettable, void* proofmeta);
 
 
 /**
@@ -458,8 +457,8 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data,
  *          The remaining parameters are \p clause, a pointer to an integer array containing the learned clause, and \p len, the length of the learned clause.
  *          The \p clause pointer is only guaranteed to be valid only during the execution of the \p callback function.
  *          If this callback setter is called several times on the \p solver, only the most recent call is taken into account.
- *          Some proof formats may require additional \p proofmeta data of length \p proofmeta_bytes.
- *          The semantics of the proof metadata is specific to the selected proof method and is specified in the configuration options.
+ *          \p proofmeta points to a struct containing additional proof metadata.
+ *          The struct type and its semantics are specific to the selected proof method and are specified in the configuration options.
  *
  * @param[in] solver The solver instance.
  * @param[in] data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
@@ -474,7 +473,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_terminate(void* solver, void* data,
  * State of \p solver after the function returns: same as before
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_export(void* solver, void* data, int max_length, 
-    void (*callback)(void* data, int32_t const* clause, int32_t len, void* proofmeta, int32_t proofmeta_bytes));
+    void (*callback)(void* data, int32_t const* clause, int32_t len, void* proofmeta));
 
 
 /**
@@ -483,8 +482,8 @@ IPASIR_API ipasir2_errorcode ipasir2_set_export(void* solver, void* data, int ma
  *        The argument \p data is passed on to the \p callback function as its first parameter.
  *        The remaining parameters are \p clause, a pointer to an integer array containing the deleted clause, and \p len, the length of the deleted clause.
  *        The \p clause pointer is only guaranteed to be valid only during the execution of the \p callback function.
- *        Some proof formats may require additional \p proofmeta data of length \p proofmeta_bytes.
- *        The semantics of the proof metadata is specific to the selected proof method and is specified in the configuration options.
+ *        \p proofmeta points to a struct containing additional proof metadata.
+ *        The struct type and its semantics are specific to the selected proof method and are specified in the configuration options.
  * 
  * @param solver The solver instance.
  * @param data Opaque pointer passed to the callback function as the first parameter. May be nullptr.
@@ -492,7 +491,7 @@ IPASIR_API ipasir2_errorcode ipasir2_set_export(void* solver, void* data, int ma
  * @return IPASIR_API 
  */
 IPASIR_API ipasir2_errorcode ipasir2_set_delete(void* solver, void* data, 
-    void (*callback)(void* data, int32_t const* clause, int32_t len, void* proofmeta, int32_t proofmeta_bytes));
+    void (*callback)(void* data, int32_t const* clause, int32_t len, void* proofmeta));
 
 
 /**
