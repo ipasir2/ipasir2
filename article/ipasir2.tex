@@ -1,0 +1,285 @@
+\documentclass[sat]{iosart2x}
+
+\pubyear{2025}
+\volume{1}
+\firstpage{1}
+\lastpage{1}
+
+\begin{document}
+
+\begin{frontmatter}
+\title{IPASIR-2: Re-entrant Incremental SAT Solver API 2.0}
+\runtitle{IPASIR-2}
+
+\begin{aug}
+\author[A]{\fnms{Markus} \snm{Iser}\ead[label=e1]{markus.iser@kit.edu}}
+\author{\fnms{Felix} \snm{Kutzner}\ead[label=e2]{felix.kutzner}}
+\author[A]{\fnms{Dominik} \snm{Schreiber}\ead[label=e3]{dominik.schreiber@kit.edu}}
+\author[B]{\fnms{Katalin} \snm{Fatzekas}\ead[label=e3]{katalin.fatzekas}}
+\author[C]{\fnms{Armin} \snm{Biere}\ead[label=e3]{armin.biere}}
+\address[A]{Institute of Theoretical Informatics, \orgname{KIT}, \cny{Germany}}
+\address[B]{Department first, \orgname{University or Company name}, Abbreviate US states, \cny{Country}}
+\address[C]{Department first, \orgname{University or Company name}, Abbreviate US states, \cny{Country}}
+\end{aug}
+
+\begin{abstract}
+This paper describes the second version of the incremental SAT solver interface IPASIR, which is a major revision of the first version.
+IPASIR-2 introduces error codes, a solver configuration interface, and methods to support clause sharing and proof logging.
+\end{abstract}
+
+\begin{keyword}
+\kwd{incremental}
+\kwd{satisfiability}
+\kwd{solver}
+\kwd{interface}
+\end{keyword}
+\end{frontmatter}
+
+
+\section{Introduction}
+
+IPASIR~\cite{ipasir} is a C API for incremental SAT solvers.
+This paper describes the second version of the IPASIR interface, which is a major revision of the first version.
+The following major requirements have been addressed in IPASIR-2.
+
+\paragraph{Error Codes}
+The introduction of error codes makes it possible to distinguish between different types of error.
+All functions in IPASIR-2 return an error code and data is returned via output parameters.
+
+\paragraph{Solver Configuration Interface}
+Many SAT solvers have a large number of configuration options.
+IPASIR-2 introduces a solver configuration interface to allow these options to be set.
+Some configuration options are universal and therefore specified in the standard, others are solver specific.
+The interface is designed to be generic and extensible to support a wide range of solver configuration options.
+
+\paragraph{Clause Sharing and Proof Logging}
+While IPASIR already supported clause export callbacks, IPASIR-2 introduces clause import and clause delete callbacks.
+This allows IPASIR-2 solvers to be used in clause sharing portfolios and to log drat proofs.
+For more advanced proof logging, e.g. LRAT, IPASIR-2 allows proof metadata to be passed with each clause.
+This metadata is method specific and can be configured by the user.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Interface Description}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This section describes the IPASIR-2 user interface.
+We divide the interface into the following functional categories: core functions, solver configuration, clause sharing and proof logging, and fact sharing.
+Each category is described in a separate subsection.
+In addition to a functional specification, we provide a brief rationale for the design choices made.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{General Definitions}
+
+\subsubsection{Thread Safety}
+
+The IPASIR-2 specification allows multiple solvers to be initialised and used in parallel.
+The intention is to cover use cases where the client starts an arbitrary number of solver instances in parallel, but interacts with each solver instance only sequentially.
+All IPASIR-2 functions that take a solver instance $S$ as argument must not be called on the same solver instance $S$ concurrently.
+If $S$ calls a callback function, the client may only access $S$ from the callback of the calling thread.
+Solver instances are only allowed to call callback functions during \texttt{ipasir2\_solve}, and only from the same thread as the client calling \texttt{ipasir2\_solve}.
+This is to keep the client code simple and to avoid compatibility issues, for example when IPASIR-2 is used in scripting languages.
+IPASIR-2 implementations may provide custom options to replace these thread safety requirements.
+
+\subsubsection{Error Codes}
+
+IPASIR-2 functions return error codes to indicate the success or failure of a function call.
+The error codes are defined in the \texttt{ipasir2\_errorcode} enum type.
+The following error codes are defined:
+
+\begin{itemize}
+    \item \texttt{IPASIR2\_E\_OK}: Success.\\
+    The function call was successful.
+    \item \texttt{IPASIR2\_E\_UNKNOWN}: Unknown error.\\
+    The function call failed for an unknown reason.
+    \item \texttt{IPASIR2\_E\_UNSUPPORTED}: Unsupported function.\\
+    The function is not implemented by the solver.
+    \item \texttt{IPASIR2\_E\_UNSUPPORTED\_ARGUMENT}: Unsupported argument.\\
+    The function is not implemented for handling the given argument value.
+    \item \texttt{IPASIR2\_E\_UNSUPPORTED\_OPTION}: Unknown option.\\
+    The configuration option is not implemented by the solver.
+    \item \texttt{IPASIR2\_E\_INVALID\_STATE}: Invalid state.\\
+    The function call is not allowed in the current state of the solver.
+    \item \texttt{IPASIR2\_E\_INVALID\_ARGUMENT}: Invalid argument.\\
+    The given argument value is invalid.
+    \item \texttt{IPASIR2\_E\_INVALID\_OPTION\_VALUE}: Invalid option value.\\
+    The option value is outside the allowed range.
+\end{itemize}
+
+\subsubsection{Solver States}
+
+The state of the IPASIR-2 solver is defined by the state of the underlying state machine.
+State transitions are triggered by IPASIR-2 function calls.
+The state machine is initialized in the CONFIG state.
+This is new in IPASIR-2 and allows for setting configuration options before adding clauses.
+Functions are only allowed to be called in the states specified in the documentation.
+If a function is called in the wrong state, the function returns \texttt{IPASIR2\_E\_INVALID\_STATE}.
+The following states are defined:
+
+\begin{itemize}
+    \item \texttt{IPASIR2\_S\_CONFIG}: Configuration state.
+    \item \texttt{IPASIR2\_S\_INPUT}: Input state.
+    \item \texttt{IPASIR2\_S\_SAT}: Satisfiable state.
+    \item \texttt{IPASIR2\_S\_UNSAT}: Unsatisfiable state.
+    \item \texttt{IPASIR2\_S\_SOLVING}: Solving state.
+\end{itemize}
+
+Another innovation in IPASIR-2 is that states are partially ordered.
+This allows for specifying a maximal state in which a function can be called, or in which a configuration option can be set.
+The partial order is defined as $\mathtt{CONFIG < INPUT = SAT = UNSAT < SOLVING}$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Core Functions}
+
+\begin{figure}[h]
+    \tt\raggedright
+    ipasir2\_signature(char** signature)\\[1ex]
+    ipasir2\_init(void** S)\\
+    ipasir2\_release(void* S)\\[1ex]
+    ipasir2\_add(void* S, int32\_t* clause, int len, int forgetable, void* proofmeta)\\
+    ipasir2\_solve(void* S, int32\_t* assumps, int len, int* result)\\
+    ipasir2\_value(void* S, int32\_t lit, int* result)\\
+    ipasir2\_failed(void* S, int32\_t lit, int* result)\\[1ex]
+    ipasir2\_set\_terminate(void* S, void* data, int (*callback)(void* data))
+    \caption{IPASIR-2 Core Functions}
+\end{figure}
+
+The core functions of IPASIR-2 are essentially the same as those of IPASIR.
+A major difference is that all functions return an error code which is \texttt{IPASIR2\_E\_OK} if the fThe function \texttt{ipasir2\_init} constructs a new solver instance and returns a pointer to it in the output parameter.
+The state of the returned solver is initialized to \texttt{CONFIG}.
+The function \texttt{ipasir2\_signature} returns the name and version of the IPASIR-2 solver in the output parameter.
+It can be called at any time and also simultaneously from any thread.
+
+The \texttt{ipasir2\_init} function constructs a new solver instance and returns a pointer to it in the output parameter.
+The state of the returned solver is initialised to \texttt{CONFIG}.
+Multiple solver instances can be created in parallel.
+The \texttt{ipasir2\_release} function destroys the given solver instance, freeing all solver resources and allocated memory.
+
+The \texttt{ipasir2\_add} function adds a \texttt{clause} to the formula.
+The clause is a pointer to an array of literals of the given \texttt{length}.
+If \texttt{forgettable} is set to zero, the solver guarantees that the clause will be satisfied in any model it finds, otherwise the solver is allowed to remove the clause from the formula.
+The \texttt{proofmeta} parameter points to a struct containing additional proof metadata.
+The struct type and its semantics are specific to the selected proof method and are specified in the configuration options.
+
+The function \texttt{ipasir2\_solve} solves the formula under the given \texttt{assumption} literals.
+As long as the function is running, the solver is in the \texttt{SOLVING} state.
+If the solver calls one of the callback functions during the execution of \texttt{ipasir2\_solve}, the state of the solver is also \texttt{SOLVING}.
+Callbacks are allowed to execute solver functions that are allowed in the \texttt{SOLVING} state.
+The function returns the result of the search in the output parameter \texttt{result}.
+If the formula is satisfiable, the output parameter result is set to $10$ and the solver state is changed to \texttt{SAT}.
+If the formula is unsatisfiable, the output parameter result is set to $20$ and the solver state is changed to \texttt{UNSAT}.
+If the search is aborted, the output parameter result is set to $0$ and the solver state is changed to \texttt{INPUT}.
+
+The \texttt{ipasir2\_value} function can only be used when the solver is in the \texttt{SAT} state and returns the truth value of the given literal in the satisfying assignment found.
+The \texttt{result} output parameter is set to \texttt{lit} if \texttt{lit} is satisfied by the model, and to \texttt{-lit} if \texttt{lit} is not satisfied by the model.
+The result output parameter can be set to zero if the assignment found supports both values for the literal.
+
+The function \texttt{ipasir2\_failed} can only be used when the solver is in the \texttt{UNSAT} state and indicates whether the given assumption \texttt{literal} was used to prove unsatisfiability.
+The output parameter \texttt{result} is set to $1$ if the given assumption literal was used to prove unsatisfiability, otherwise it is set to $0$.
+The set of assumption literals for which the result of this function call is $1$ forms an unsatisfiable core of the formula.
+
+The function \texttt{ipasir2\_set\_terminate} sets a callback function that is used to indicate a termination requirement to the solver.
+The solver calls this function periodically while in the \texttt{SOLVING} state.
+When the callback function is called, the given opaque \texttt{data} pointer is passed to the callback as its first argument.
+If the callback function returns a non-zero value, the solver terminates the search.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Configuration Interface}
+
+\subsubsection{The Option Struct}
+
+The \texttt{ipasir2\_option} struct is used to define solver configuration options.
+
+\paragraph{NAME}
+In IPASIR-2, options are identified by a string using dot-separated namespaces for structuring.
+The top level namespace ``ipasir'' is reserved for the options specified in the IPASIR-2 standard.
+If an IPASIR-2 solver supports a standard option, it is guaranteed to have the name specified in the standard.
+It is recommended, but not mandatory, that IPASIR-2 solvers support all standard options.
+Other proprietary options may be specified in the solver documentation, but must not be in the ``ipasir'' namespace.
+
+\paragraph{MIN and MAX values}
+The `min' and `max' fields specify the range of values that the option can take.
+To simplify the interface, all option values are given as 64-bit integers.
+Solvers using different option types must map them internally.
+
+\paragraph{MAX\_STATE}
+The `max\_state' field specifies the maximum solver state in which the option can be set.
+While some options can be set at any time, e.g., from a callback during the \texttt{SOLVING} state, others can only be set in the \texttt{CONFIG} or \texttt{INPUT} states.
+
+\paragraph{TUNABLE}
+The `tunable' field indicates whether the option is eligible for tuning by an automated configuration tuning algorithm.
+
+\paragraph{INDEXED}
+Many options are global and can only be set once for the solver.
+However, some options can be set per variable or other types of indices.
+The `indexed' field indicates whether the option can be set per variable or other types of indices.
+In this case the index parameter of \texttt{ipasir2\_set\_option} specifies the index.
+
+\paragraph{HANDLE}
+The `handle' is used by the option setter to identify the option.
+
+\subsubsection{Option Getters and Setters}
+
+\begin{figure}[h]
+    \tt\raggedright
+    ipasir2\_options(void* S, ipasir2\_option** options, int* count)\\
+    ipasir2\_set\_option(void* S, ipasir2\_option* handle, int64\_t value, int64\_t index)
+    \caption{IPASIR-2 Configuration Interface}
+\end{figure}
+
+The \texttt{ipasir2\_options} function returns an array of configuration options supported by the solver in the \texttt{options} output parameter, and the \texttt{count} output parameter contains the number of elements in the array.
+The array is owned by the solver and must not be freed by the caller.
+
+The \texttt{ipasir2\_set\_option} function sets the \texttt{value} of the option specified by the given \texttt{handle}.
+If the option is indexed, the \texttt{index} parameter specifies the variable on which the option is set, otherwise the index parameter is ignored.
+The value must be in the allowed range as specified in the option handle.
+The solver must be in a state where the option can be set as specified in the option handle.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Clause Sharing Interface}
+
+\begin{figure}[h]
+\tt\raggedright
+ipasir2\_set\_export(void* S, void* data, int max\_length, void (*callback)(void* data, int32\_t const* clause, int32\_t len, void* proofmeta))\\
+ipasir2\_set\_import(void* S, void* data, void (*callback)(void* data))\\
+ipasir2\_set\_delete(void* S, void* data, void (*callback)(void* data, int32\_t const* clause, int32\_t len, void* proofmeta))
+\end{figure}
+
+The function \texttt{ipasir2\_set\_export} sets a callback function to receive learned clauses from the solver.
+The solver calls this callback function in the \texttt{SOLVING} state for each learned clause whose size is less than \texttt{max\_length} or if \texttt{max\_length} is $-1$.
+The opaque \texttt{data} pointer is passed to the callback function as its first parameter.
+The \texttt{clause} parameter is a pointer to the learned clause of length \texttt{len} and is only valid during the execution of the callback function.
+The \texttt{proofmeta} parameter points to a struct containing additional proof metadata.
+The struct type and its semantics are specific to the selected proof method and are specified in the configuration options.
+
+The function \texttt{ipasir2\_set\_import} sets a callback function for importing a clause into the solver.
+This callback is called periodically while the solver is in the \texttt{SOLVING} state.
+The opaque \texttt{data} pointer is passed to the callback function as its first parameter.
+The callback function uses \texttt{ipasir2\_add} to add a clause to the solver.
+This roundtrip is necessary to resolve any ownership issues with the clause pointer.
+To import more than one clause, the callback must be called several times.
+If there are no more clauses to import, the callback returns without calling \texttt{ipasir2\_add}.
+
+The function \texttt{ipasir2\_set\_delete} sets a callback function for notification of deleted clauses.
+The solver calls this function in the \texttt{SOLVING} state for each clause deleted from the formula.
+The opaque \texttt{data} pointer is passed to the callback function as its first parameter.
+The \texttt{clause} parameter is a pointer to the deleted clause of length \texttt{len} and is only valid during the execution of the callback function.
+The \texttt{proofmeta} parameter points to a struct containing additional proof metadata.
+The struct type and its semantics are specific to the selected proof method and are specified in the configuration options.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Fact Sharing Interface}
+
+\begin{figure}[h]
+\tt\raggedright
+ipasir2\_set\_fixed(void* S, void* data, void (*callback)(void* data, int32\_t fixed))
+\caption{IPASIR-2 Fact Sharing Interface}
+\end{figure}
+
+The function \texttt{ipasir2\_set\_fixed} sets a callback to notify about fixed assignments.
+The solver calls this function while being in the \texttt{SOLVING} state, whenever it determines that a literal true in all models of the formula.
+The function does not return the fixed literals in any particular order, nor does it guarantee that all fixed literals are reported.
+
+\bibliographystyle{ios1}
+\bibliography{ipasir2}
+
+\end{document}
