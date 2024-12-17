@@ -1,0 +1,332 @@
+% additional options: [seceqn,secthm,crcready]
+\documentclass[sat]{iosart2x}
+
+%% Packages
+\usepackage{dcolumn}
+
+%% Definitions
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+
+%% Article Info
+\firstpage{1}
+\lastpage{6}
+\volume{1}
+\pubyear{2021}
+
+\begin{document}
+\begin{frontmatter} % The preamble begins here.
+
+%
+%\pretitle{Pretitle}
+\title{Instructions for the preparation of a camera-ready paper in \LaTeX\thanks{Footnote in title.}}
+
+\runtitle{Instructions for the preparation of a camera-ready paper in \LaTeX}
+%\subtitle{Subtitle}
+
+\begin{aug}
+\author[A]{\inits{F.}\fnms{First} \snm{Author}\ead[label=e1]{editorial@iospress.nl}}
+\author[B]{\inits{S.}\fnms{Second} \snm{Author}\ead[label=e2]{second@somewhere.com}}
+\author[B]{\inits{T.}\fnms{Third} \snm{Author}\ead[label=e3]{third@somewhere.com}}
+\address[A]{Journal Production Department, \orgname{IOS Press}, Nieuwe Hemweg 6b, 1013 BG, Amsterdam, \cny{The~Netherlands}}
+\address[B]{Department first, \orgname{University or Company name},
+Abbreviate US states, \cny{Country}}
+\end{aug}
+
+\begin{abstract}
+The abstract should be clear, descriptive, self-explanatory and no longer than 200 words. It should also
+be suitable for publication in abstracting services. Do not include references or formulae in the abstract.
+\end{abstract}
+
+\begin{keyword}
+\kwd{Keyword one}
+\kwd{keyword two}
+\kwd{keyword three}
+\kwd{keyword four}
+\kwd{keyword five}
+\end{keyword}
+\end{frontmatter}
+
+
+
+
+\section{Introduction}
+
+The instructions are designed for the preparation of a camera-ready and accepted paper in \LaTeX{} and should be read carefully.
+Prepare your paper in the same style as used in this sample pdf file.
+These instructions also contain the necessary information for manual editing.
+
+Manuscripts must be written in English. Authors whose native language is not English are recommended to seek the advice of a native English speaker,
+if possible, before submitting their manuscripts. In the text no reference should be made
+to page numbers; if necessary, one may refer to sections. Try to avoid excessive use of italics and bold face.
+
+
+\section{Structure of the paper}
+\subsection{Title page}
+
+The title page should provide the following information:
+
+\begin{itemize}
+\item Title (should be clear, descriptive and not too long).
+\item  Name(s) of author(s).
+\item  Full affiliation(s). Names of main institution and country should be given within respective tags: \verb|\orgname{}|, \verb|\cny{}|.
+\item  Abstract should be clear, descriptive, self-expla\-na\-tory and no longer than 200
+words. It should also be suitable for publication in abstracting services.
+\item  Up to five keywords.
+\end{itemize}
+
+\subsection{Body of the text}
+\begin{itemize}
+\item The use of first persons (i.e., ``I'', ``we'', ``their'', possessives, etc.) should be avoided,
+and can preferably be expressed by the passive voice or other ways. This also applies to the Abstract.
+\item A research paper should be structured in terms of four parts, each of which may comprise of multiple sections:
+\begin{itemize}
+\item Part One is problem description/definition, and a literature review upon the state of the
+art.
+\item Part Two is methodological formulation and/or theoretical development (fundamentals, principle and/or approach,
+etc.).
+\item Part Three is prototyping, case study or experiment.
+\item Part Four is critical evaluation against related works, and the
+conclusion.
+\end{itemize}
+\end{itemize}
+
+In any article it is unnecessary to have an arrangement statement at the beginning (or end) of every \mbox{(sub-)} section.
+Rather, a single overall arrangement statement about the whole paper can be made at the end of the Introduction section.
+
+
+\section{Typographical style and layout}
+
+\subsection{Type area}
+
+The \texttt{iosart2x.cls} document class has been designed to produce
+the right layout from your \LaTeX{} input. Authors are requested to
+strictly follow these instructions. \emph{The provided class file
+iosart2x must not be changed}.
+
+The text output area is automatically set within an area of particular journal layout measurements.
+Please do not use any
+\LaTeX{} or \TeX{} commands that affect the layout or formatting of
+your document (i.e. commands like \verb|\textheight|,
+\verb|\textwidth|, etc.).
+
+\subsection{Font}
+
+For literal text, please use
+\texttt{type\-writer} (\verb|\texttt{}|)
+or \textsf{sans serif} (\verb|\textsf{}|). \emph{Italic} (\verb|\emph{}|)
+or \textbf{boldface} (\verb|\textbf{}|) should be used for emphasis.
+
+
+\subsection{General layout}
+
+For the main
+body of the paper use the commands of the standard \LaTeX{}
+``article'' class. You can add packages or declare new \LaTeX{}
+functions if and only if there is no conflict between your packages
+and the \texttt{iosart2x.cls}.
+
+Always give a \verb|\label| where possible and use \verb|\ref| for cross-referencing.
+
+Use class option ``\texttt{crcready}'' in order to remove the page numbers from your article.
+
+
+\subsection{Title page}
+
+Use sentence case for the title.
+
+Use \verb|\thanks{}| command for footnotes in \verb|\title|
+and \verb|\author| commands.
+
+Do not use capitals for author's surname.
+Do not add a period after the last keyword.
+
+
+\subsection{(Sub-)section headings}
+
+Use the standard \LaTeX{} commands for headings: \verb|\section|, \verb|\subsection|, \verb|\subsubsection|, \verb|\paragraph|.
+Headings will be automatically numbered.
+
+\subsection{Footnotes}
+Footnotes should only be used if absolutely essential.
+In most cases it is possible to incorporate the information in the text.
+If used, they should be kept as short as possible.
+The footnotes are numbered automatically. Footnotes within the text should be coded with the command
+\verb|\footnote{Text}|.
+
+
+\subsection{References}
+
+References should be collected at the end of your paper (environment
+\verb|thebibliography|). References should be listed alphabetically in the style presented in the section \textbf{References} at the
+end of these instructions. Use the command \verb|\cite| to refer to the entries in the bibliography so that your
+accumulated list corresponds to the citations made in the text body.
+
+\begin{figure}[b]
+\includegraphics{iospress}
+\caption{Figure caption.}
+\end{figure}
+
+
+\subsection{Figures}
+\subsubsection{General remarks on figures}
+The text should include references to all figures.
+Refer to figures in the text as Fig. 1 (or Figure 1 in the beginning of a sentence), Fig. 2, etc., \textbf{not} with the section number included,
+e.g. Figure 2.3, etc. Do not use the words ``below'' or ``above'' when referring to the
+figures.
+
+Do not collect figures at the back of your article, but incorporate them in the text.
+
+Position figures at the top or bottom of a page, near the paragraph in which the figure is first mentioned.
+Figures should not have text wrapped alongside.
+
+Each figure should have a self-explanatory caption. Place the figure caption \textit{below} the figure.
+
+All figures coded with \verb|figure| and \verb|\caption| will be numbered automatically.
+
+On maps and other figures where a scale is needed, use bar scales rather than numerical ones of the type 1:10,000.
+
+\subsubsection{Quality of illustrations}\label{s3.8.2}
+Do \textit{not} use illustrations taken from the Internet.
+The resolution of images intended for viewing on a screen is not sufficient for the printed version of the journal.
+If you are incorporating screen captures, keep in mind that the text may not be legible after reproduction
+(using a screen capture tool, instead of the Print Screen option of PC's, might help to improve the quality).
+
+
+\begin{itemize}
+\item Line art should have a minimum resolution of 600 dpi;
+\item  grayscales (incl photos) should have a minimum resolution of 300 dpi (no lettering), or 500 dpi (when there is lettering);
+\item  do not save figures as JPEG, this format may lose information in the
+process;
+\item  do not use figures taken from the Internet, the resolution will be too low for
+printing;
+\item  do not use color in your figures if they are to be printed in black \& white, as this will reduce the print
+quality (note that in image processing software the default is often color, so you should change the
+settings);
+\item  for figures that should be printed in color, please send a CMYK encoded files.
+\end{itemize}
+
+\subsubsection{Color figures}
+It is possible to have figures printed in color,
+provided the cost of their reproduction is paid for by the author.
+Please contact \email{editorial@iospress.nl} for a quotation if you wish to have figures printed in color.
+
+\subsection{Tables}
+
+The text should include references to all tables.
+Refer to tables in the text as Table 1, Table 2, etc., not with the section number included,
+ e.g. Table 2.3, etc. Do not use the words ``below'' or ``above'' referring to the
+ tables.
+
+Position tables at the top or bottom of a page, near the paragraph in which the table is first mentioned.
+Tables should not have text wrapped alongside.
+
+
+Code your tables using \LaTeX{} environments \verb|table| and
+\verb|tabular|. Each table should have a brief and self-explanatory caption that should be put above the
+table. Do not use the period at the end of the table caption. Double column journal: if the table does not fit into one column it may be placed across both columns
+using \verb|\begin{table*}|
+so that it
+appears at the top of a page.
+
+
+
+
+All tables coded with \verb|table| and \verb|\caption| will be numbered automatically.
+
+Column headings should be brief, but sufficiently explanatory.
+Standard abbreviations of units of measurement should be added between parentheses.
+Vertical lines should not be used to separate columns. Leave some extra space between the columns instead.
+Any explanations essential to the understanding of the table should be given in footnotes at the bottom of the table.
+SI units should be used, i.e., the units based on the metre, kilogramme, second, etc.
+
+Tables should be presented in the form shown in
+Table~\ref{t1}.  Their layout should be consistent
+throughout.
+
+\begin{table*}[b]
+\caption{Table caption} \label{t1}
+\begin{tabular}{@{}ll d{1.3} d{1.3} d{1.3} d{1.3} d{1.3} d{1.3}@{}}
+\hline
+Dataset&Models&\multicolumn{1}{c}{$\alpha_1$}&
+\multicolumn{1}{c}{$\alpha_2$}&
+\multicolumn{1}{c}{$\alpha_3$}&
+\multicolumn{1}{c}{$\alpha_4$}&
+\multicolumn{1}{c}{$\alpha_5$}&
+\multicolumn{1}{c}{$\alpha_6$}\\
+\hline
+CSDS&Linear     &0.164&0.22&0.123&0.3&0.200&0.258\\
+& Logistic      &0.189&0.155&0.157&0.201&0.154&0.144\\[6pt]
+KCDS&Linear     &0.155&0.183&0.160&0.218&0.176&0.156\\
+& Logistic      &0.187&0.125&0.151&0.184&0.187&0.125\\
+\hline
+\end{tabular}
+\end{table*}
+
+
+
+\subsection{Equations}
+
+Do not put in equation numbers, since this is taken care of
+automatically. The equation numbers are always consecutive and are
+printed in parentheses flush with the right-hand margin of the text and
+level with the last line of the equation.
+Refer to equations in the text as Eq. (1), Eqs (3) and (5).
+
+
+\section{Producing of the PDF document}
+
+The \LaTeX\ document should be compiled using a Lua\LaTeX\ compiler.
+
+
+\section{Fine tuning}
+\subsection{Type area}
+Check once more that all the text and illustrations are inside the type area and
+that the type area is used to the maximum.
+
+\subsection{Capitalization}
+Use sentence case in the title and the headings.
+
+\subsection{Running headlines}
+Use \verb|\runtitle{}| command to insert short title that will appear at the top of each page. Author part will be generated automatically.
+
+\section{Submitting the paper}
+Submit the following to the journal Editorial office, online submission form or Editor-in-Chief (whichever is applicable for the journal):
+
+\begin{enumerate}
+\item The main \LaTeX{} document as well as other required files.
+\item PDF version of the \LaTeX{} file.
+\item Please make sure you do not submit more than one version of any item.
+\end{enumerate}
+
+
+\begin{acks}
+Please include your acknowledgements in \verb|acks| environment. For short acknowledgment you may use \verb|ack| environment.
+\end{acks}
+
+\begin{appendix}
+\section{Appendix title}
+Appendices should be provided in \verb|appendix| environment, before References.
+
+\subsection{First subsection}
+Use the standard \LaTeX{} commands for headings in Appendix.
+
+\subsection{Second subsection}
+Headings will be automatically numbered.
+\end{appendix}
+
+
+\begin{thebibliography}{0}
+
+\bibitem{1} L. Lamport, \textit{\LaTeX{} User's Guide \& Reference Manual},
+ Addison Wesley Publishing Co, 1985.
+
+\bibitem{2} B. Newman and E.T. Liu, Perspective on BRCA1, \textit{Breast Disease} \textbf{10} (1998), 3--10. \bid{doi={10.3233/BD-1998-101-203}}
+
+\bibitem{3} D.F. Pilkey, Happy conservation laws, in: \textit{Neural Stresses}, J. Frost, ed., Controlled Press, Georgia, 1995, pp. 332--391.
+
+\bibitem{4} E. Wilson, Active vibration analysis of thin-walled beams, Ph.D. Dissertation, University of Virginia, 1991.
+
+\end{thebibliography}
+
+
+\end{document}

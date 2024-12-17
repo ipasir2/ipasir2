@@ -398,7 +398,7 @@ IPASIR_API ipasir2_errorcode ipasir2_solve(void* solver, int* result, int32_t co
  * Required state of \p solver: SAT
  * State of \p solver after the function returns: SAT
  */
-IPASIR_API ipasir2_errorcode ipasir2_val(void* solver, int32_t lit, int32_t* result);
+IPASIR_API ipasir2_errorcode ipasir2_value(void* solver, int32_t lit, int32_t* result);
 
 
 /**

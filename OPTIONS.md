@@ -126,7 +126,9 @@ In some applications it is forseable which variables can occur in assumptions or
 As a performance optimization, such applications can set variables to a frozen state to entirely prevent the solver from eliminating them, thus preventing forseable on-demand restoring of clauses from the elimination stack.
 Moreover, if it is clear that a variable will never be used as an assumption (again), such applications can disable the frozen state for that variable.
 
-##### Assumption Handling
+#### Assumption Handling
+
+##### Propagation of assumptions
 
 > `ipasir.assumptions.propagate = n`
 > - `n=0` propagate one assumption per decision level (default)
@@ -143,7 +145,7 @@ Specify how to propagate assumptions. Use cases include:
 
 Normally the fixed() callback only notifies about fixed assignments at level zero. With this option enabled, use the fixed() callback to also notify about literals implied by assumptions.
 
-##### Activation of logging
+#### Activation of logging
 
 > `ipasir.logging = n`
 > - `n = 0` deactivate low-level logging
