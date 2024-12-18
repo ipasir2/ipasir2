@@ -144,9 +144,3 @@ Specify how to propagate assumptions. Use cases include:
 > - `n=1` treat assumptions as fixed
 
 Normally the fixed() callback only notifies about fixed assignments at level zero. With this option enabled, use the fixed() callback to also notify about literals implied by assumptions.
-
-#### Activation of logging
-
-> `ipasir.logging = n`
-> - `n = 0` deactivate low-level logging
-> - otherwise activate low-level logging
