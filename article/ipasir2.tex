@@ -148,8 +148,7 @@ The partial order is defined as $\mathtt{CONFIG < INPUT = SAT = UNSAT < SOLVING}
 \end{figure}
 
 The core functions of IPASIR-2 are essentially the same as those of IPASIR.
-A major difference is that all functions return an error code which is \texttt{IPASIR2\_E\_OK} if the fThe function \texttt{ipasir2\_init} constructs a new solver instance and returns a pointer to it in the output parameter.
-The state of the returned solver is initialized to \texttt{CONFIG}.
+A major difference is that all functions return an error code which is \texttt{IPASIR2\_E\_OK} if the function call was successful.
 The function \texttt{ipasir2\_signature} returns the name and version of the IPASIR-2 solver in the output parameter.
 It can be called at any time and also simultaneously from any thread.
 
@@ -282,7 +281,7 @@ ipasir2\_set\_fixed(void* S, void* data, void (*callback)(void* data, int32\_t f
 
 The function \texttt{ipasir2\_set\_fixed} sets a callback to notify about fixed assignments.
 The solver calls this function while being in the \texttt{SOLVING} state, whenever it determines that a literal is implied by the formula and thus true in any model.
-If the option \texttt{ipasir.assumptions.fixed} is set to $1$, the callback notifies about literals implied by the formala \emph{emph} assumptions (cf.~Section~\ref{sec:assumptionsfixed}).
+If the option \texttt{ipasir.assumptions.fixed} is set to $1$, the callback notifies about literals implied by the formala \emph{and} assumptions (cf.~Section~\ref{sec:assumptionsfixed}).
 The function does not return the fixed literals in any particular order, nor does it guarantee that all fixed literals are reported.
 
 
