@@ -58,6 +58,10 @@ This allows IPASIR-2 solvers to be used in clause sharing portfolios and to log 
 For more advanced proof logging, e.g. LRAT, IPASIR-2 allows proof metadata to be passed with each clause.
 This metadata is method specific and can be configured by the user.
 
+\paragraph{Fact Sharing}
+IPASIR-2 introduces a callback to notify about fixed assignments.
+This is useful for applications that require the solver to notify about literals that are implied by the formula.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Interface Description}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -89,7 +93,7 @@ The following error codes are defined:
 \begin{itemize}
     \item \texttt{IPASIR2\_E\_OK}: Success.\\
     The function call was successful.
-    \item \texttt{IPASIR2\_E\_UNKNOWN}: Unknown error.\\
+    \item \texttt{IPASIR2\_E\_UNKNOWN}: Generic error.\\
     The function call failed for an unknown reason.
     \item \texttt{IPASIR2\_E\_UNSUPPORTED}: Unsupported function.\\
     The function is not implemented by the solver.
@@ -130,7 +134,7 @@ The partial order is defined as $\mathtt{CONFIG < INPUT = SAT = UNSAT < SOLVING}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Core Functions}
 
-\begin{figure}[h]
+\begin{figure}[t]
     \tt\raggedright
     ipasir2\_signature(char** signature)\\[1ex]
     ipasir2\_init(void** S)\\
@@ -219,7 +223,7 @@ The `handle' is used by the option setter to identify the option.
 
 \subsubsection{Option Getters and Setters}
 
-\begin{figure}[h]
+\begin{figure}[t]
     \tt\raggedright
     ipasir2\_options(void* S, ipasir2\_option** options, int* count)\\
     ipasir2\_set\_option(void* S, ipasir2\_option* handle, int64\_t value, int64\_t index)
@@ -237,11 +241,12 @@ The solver must be in a state where the option can be set as specified in the op
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Clause Sharing Interface}
 
-\begin{figure}[h]
+\begin{figure}[t]
 \tt\raggedright
 ipasir2\_set\_export(void* S, void* data, int max\_length, void (*callback)(void* data, int32\_t const* clause, int32\_t len, void* proofmeta))\\
 ipasir2\_set\_import(void* S, void* data, void (*callback)(void* data))\\
 ipasir2\_set\_delete(void* S, void* data, void (*callback)(void* data, int32\_t const* clause, int32\_t len, void* proofmeta))
+\caption{IPASIR-2 Clause Sharing Interface}
 \end{figure}
 
 The function \texttt{ipasir2\_set\_export} sets a callback function to receive learned clauses from the solver.
@@ -267,17 +272,152 @@ The \texttt{proofmeta} parameter points to a struct containing additional proof 
 The struct type and its semantics are specific to the selected proof method and are specified in the configuration options.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Fact Sharing Interface}
+\subsection{Fact Sharing Interface}\label{sec:factsharing}
 
-\begin{figure}[h]
+\begin{figure}[t]
 \tt\raggedright
 ipasir2\_set\_fixed(void* S, void* data, void (*callback)(void* data, int32\_t fixed))
 \caption{IPASIR-2 Fact Sharing Interface}
 \end{figure}
 
 The function \texttt{ipasir2\_set\_fixed} sets a callback to notify about fixed assignments.
-The solver calls this function while being in the \texttt{SOLVING} state, whenever it determines that a literal true in all models of the formula.
+The solver calls this function while being in the \texttt{SOLVING} state, whenever it determines that a literal is implied by the formula and thus true in any model.
+If the option \texttt{ipasir.assumptions.fixed} is set to $1$, the callback notifies about literals implied by the formala \emph{emph} assumptions (cf.~Section~\ref{sec:assumptionsfixed}).
 The function does not return the fixed literals in any particular order, nor does it guarantee that all fixed literals are reported.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Standard Configuration Options}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This section describes the standard configuration options that are part of the IPASIR-2 standard.
+Solvers are not required to support all options, but if they do, they must use the names specified in the standard.
+The options are divided into tunable and non-tunable options (Section~\ref{sec:nontunable}).
+Of the non-tunable options, we treat the variable specific options separately (Section~\ref{sec:variableoptions}).
+
+\subsection{Non-Tunable Options}\label{sec:nontunable}
+
+Non-tunable options are options which are not intended to be changed by configuration tuning algorithms.
+Their function is to set the behaviour of the solver to a specific mode or to configure the solver for a specific use case.
+
+\subsubsection{Setting of Limits}
+Use cases of limits configuration include local search for combinatorial optimization~\cite{Cohen:2021:LSOpt}, the determination of implied facts (cf. Section~\ref{sec:factsharing}), and the setting of deterministic solve limits.
+
+\begin{itemize}
+    \item \texttt{ipasir.limits.conflicts = n}
+    \begin{itemize}
+        \item \texttt{n = -1} no conflict limit (default)
+        \item otherwise exit when number of conflicts exceeds $n$
+    \end{itemize}
+    \item \texttt{ipasir.limits.decisions = n}
+    \begin{itemize}
+        \item \texttt{n = -1} no decision limit (default)
+        \item otherwise exit when number of decisions exceeds $n$
+    \end{itemize}
+\end{itemize}
+
+
+\subsubsection{Non-incremental Solving Mode}
+Even though IPASIR is designed for incremental solving, there are use cases where a non-incremental solving mode is beneficial.
+This includes the use of one-shot solving in parallel portfolios~\cite{Hamadi:2010:ParallelPortfolio}, automatic configuration optimization~\cite{Hutter:2017:CSSC}, and the use of SAT solvers as a library in other applications.
+If the option is activated, only a single call to \texttt{ipasir2\_solve} is effective while further calls lead to the solver returning \texttt{IPASIR2\_E\_INVALID\_STATE}.
+
+\begin{itemize}
+    \item \texttt{ipasir.yolo = n}
+    \begin{itemize}
+        \item \texttt{n = 0} incremental mode (default)
+        \item \texttt{n = 1} ``you only live once'' mode
+    \end{itemize}
+\end{itemize}
+
+
+\subsubsection{Treat Assumptions as Fixed}\label{sec:assumptionsfixed}
+Normally the \texttt{fixed} callback only notifies about literals implied by the formula (cf. Section~\ref{sec:factsharing}).
+With this option enabled, it notifies about literals implied by the formula \emph{and} the assumptions.
+Applications include combinatorial optimization~\cite{Cohen:2021:LSOpt}.
+
+\begin{itemize}
+    \item \texttt{ipasir.assumptions.fixed = n}
+    \begin{itemize}
+        \item \texttt{n=0} do not treat assumptions as fixed (default)
+        \item \texttt{n=1} treat assumptions as fixed
+    \end{itemize}
+\end{itemize}
+
+
+\subsection{Variable-Specific Options}\label{sec:variableoptions}
+Some options need to be set per variable, e.g., to set variable scores, variable phases, or to freeze variables.
+For such use cases, the \texttt{index} parameter of \texttt{ipasir2\_set\_option} can be used to specify the variable id.
+If \texttt{index} is set to $0$, the option is set globally for all variables.
+
+\subsubsection{Initializing Phases}
+Use cases for setting initial phases include the activation of zero-first branching (as in Minisat~\cite{Niklas:2003:Minisat}), application-specific phase initialization heuristics, or search diversification in parallel portfolios~\cite{Hamadi:2010:ParallelPortfolio}.
+
+\begin{itemize}
+    \item \texttt{ipasir.variables.phase.initial = n} 
+    \begin{itemize}
+        \item \texttt{n = 0} use default initial phase (default)
+        \item \texttt{n = -1} set initial phase to false
+        \item \texttt{n = 1} set initial phase to true
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Fixing Phases}
+Fixing phases means to force a solver to always make a certain decision for a variable.
+Use cases for fixing phases include combinatorial optimization~\cite{Cohen:2021:LSOpt}.
+
+\begin{itemize}
+    \item \texttt{ipasir.variables.phase.fixed = n}
+    \begin{itemize}
+        \item \texttt{n = 0} do not fix phases (default)
+        \item \texttt{n = -1} fix phase to false
+        \item \texttt{n = 1} fix phase to true
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Initializing Branching Order}
+Use cases for setting initial branching order includes the setting of application specific branching priorities~\cite{Iser:2012:MinisatKodkod}.
+The solver guarantees that the initial branching order aligns with the ordering induced by the variable scores set by the user.
+
+\begin{itemize}
+    \item \texttt{ipasir.variables.score.initial = n} 
+    \begin{itemize}
+        \item set the initial variable score to \texttt{n}
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Freezing Variables}
+Some simplification methods, such as variable elimination, require additional care to be taken if the solver is used incrementally.
+For example, eliminated variables also have to be restored when they are used as assumptions or when they appear in clauses added between two calls to \texttt{ipasir2\_solve}.
+In some applications it is forseable which variables will be used as assumptions or in added clauses.
+As a performance optimization, such applications can set variables to a frozen state to entirely prevent the solver from eliminating them, thus preventing forseable on-demand restoring of clauses from the elimination stack.
+
+\begin{itemize}
+    \item \texttt{ipasir.variables.frozen = n}
+    \begin{itemize}
+        \item \texttt{n=0} disable frozen state (default)
+        \item \texttt{n=1} enable frozen state
+    \end{itemize}
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Tunable Options}
+
+\subsubsection{Propagation of Assumptions}
+Specifies if assumptions are propagated one by one or all at once as described in~\cite{Hickey:2019:Assumps}.
+
+\begin{itemize}
+    \item \texttt{ipasir.assumptions.propagate = n}
+    \begin{itemize}
+        \item \texttt{n=0} propagate one assumption per decision level (default)
+        \item \texttt{n=1} propagate all assumptions \textit{at once}
+    \end{itemize}
+\end{itemize}
+
+
+
 
 \bibliographystyle{ios1}
 \bibliography{ipasir2}
