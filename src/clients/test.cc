@@ -1,7 +1,7 @@
 /**
  * MIT License
  * 
- * Author: Markus Iser
+ * Author: Ashlin Iser
  * 
  */
 

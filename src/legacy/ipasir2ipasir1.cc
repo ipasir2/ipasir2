@@ -1,7 +1,7 @@
 /**
  * MIT License
  * 
- * @author Markus Iser
+ * @author Ashlin Iser
  * @brief Wrap IPASIR-1 solver in IPASIR-2 app
  * @date 2022-11-04
  * 
